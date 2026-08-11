@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # OSIS-Hub — Next.js
 
 Website OSIS-Hub, dibangun dengan Next.js 14 (App Router), TypeScript, Tailwind CSS, Prisma, dan MySQL.
@@ -90,3 +91,6 @@ Ini membuka editor database di browser — kamu bisa tambah baris baru di tabel 
 npm run build
 npm run start
 ```
+=======
+# Osishub
+>>>>>>> 11d940d95dca407ce45c8ebe9551df7c0e87e966
