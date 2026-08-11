@@ -2,12 +2,13 @@
 // Database: MySQL (disesuaikan untuk Laragon)
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")      // Menggunakan port pooler (6543) + ?pgbouncer=true
+  directUrl = env("DIRECT_URL")      // Menggunakan port direct (5432) untuk migrasi/db push
 }
 
 enum Peran {
