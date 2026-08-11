@@ -1,0 +1,23 @@
+
+> osis-hub@1.0.0 build
+> next build
+
+  ▲ Next.js 14.2.35
+  - Environments: .env
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+Failed to compile.
+
+./app/api/absen/route.ts:12:29
+Type error: 'session' is possibly 'null'.
+
+[0m [90m 10 |[39m     [90m// Riwayat absensi (kehadiran event) untuk user yang login[39m[0m
+[0m [90m 11 |[39m     [36mconst[39m absensi [33m=[39m [36mawait[39m prisma[33m.[39mabsensi[33m.[39mfindMany({[0m
+[0m[31m[1m>[22m[39m[90m 12 |[39m       where[33m:[39m { pengguna_id[33m:[39m session[33m.[39mid }[33m,[39m[0m
+[0m [90m    |[39m                             [31m[1m^[22m[39m[0m
+[0m [90m 13 |[39m       orderBy[33m:[39m { waktuHadir[33m:[39m [32m"desc"[39m }[33m,[39m[0m
+[0m [90m 14 |[39m       include[33m:[39m { event[33m:[39m { select[33m:[39m { judul[33m:[39m [36mtrue[39m[33m,[39m tanggal[33m:[39m [36mtrue[39m } } }[33m,[39m[0m
+[0m [90m 15 |[39m     })[33m;[39m[0m
+Next.js build worker exited with code: 1 and signal: null

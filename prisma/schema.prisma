@@ -1,0 +1,297 @@
+// Prisma schema untuk OSIS-Hub
+// Database: MySQL (disesuaikan untuk Laragon)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Peran {
+  ANGGOTA
+  PERWAKILAN_KELAS
+  PENGURUS
+  PEMBINA
+}
+
+enum ModuleStatus {
+  AKTIF
+  SEGERA_HADIR
+  MAINTENANCE
+}
+
+enum StatusAspirasi {
+  MENUNGGU
+  DITINJAU
+  DISETUJUI
+  DITINDAKLANJUTI
+  SELESAI
+  DITOLAK
+}
+
+enum StatusRegistrasi {
+  TERDAFTAR
+  HADIR
+  BATAL
+}
+
+enum StatusProker {
+  RENCANA
+  BERJALAN
+  SELESAI
+  DITUNDA
+}
+
+enum JenisTransaksi {
+  PEMASUKAN
+  PENGELUARAN
+}
+
+enum StatusLpj {
+  DIAJUKAN
+  DIREVIEW
+  DISAHKAN
+  DITOLAK
+}
+
+// Tabel PENGGUNA — akun login untuk semua peran.
+model Pengguna {
+  id_pengguna Int      @id @default(autoincrement())
+  username    String   @unique
+  password    String
+  nama        String
+  peran       Peran
+  kelas       String?
+  jabatan     String?
+  dibuatPada  DateTime @default(now())
+
+  aspirasi       Aspirasi[]
+  registrasi     RegistrasiEvent[]
+  absensi        Absensi[]
+  poin           PoinKeaktifan[]
+  transaksi      TransaksiKeuangan[]
+  prokerDibuat   Proker[]          @relation("ProkerPembuat")
+  arsipDibuat    Arsip[]           @relation("ArsipPembuat")
+  lpjDibuat      Lpj[]             @relation("LpjPembuat")
+  lpjDireview    Lpj[]             @relation("LpjReviewer")
+
+  @@map("pengguna")
+}
+
+// Tabel MODUL — modul dashboard yang ditampilkan sesuai peran
+model Module {
+  id_module Int          @id @default(autoincrement())
+  judul     String
+  deskripsi String
+  slug      String?
+  peran     Peran
+  status    ModuleStatus @default(SEGERA_HADIR)
+  urutan    Int          @default(0)
+  dibuatPada DateTime    @default(now())
+
+  @@map("module")
+}
+
+// Tabel FITUR — fitur landing page (8 modul fitur)
+model Feature {
+  id_feature Int      @id @default(autoincrement())
+  judul      String
+  deskripsi  String
+  icon_type  String   // "path", "rect", "circle", "squares"
+  icon_path  String?  // SVG path data
+  urutan     Int      @default(0)
+  dibuatPada DateTime @default(now())
+
+  @@map("feature")
+}
+
+// Tabel STATISTIK — angka statistik landing page
+model Statistic {
+  id_statistic Int      @id @default(autoincrement())
+  angka        String
+  suffix       String   @default("")
+  label        String   @default("")
+  deskripsi    String
+  urutan       Int      @default(0)
+  dibuatPada   DateTime @default(now())
+
+  @@map("statistic")
+}
+
+// Tabel PERAN_LANDING — peran pengguna di landing page
+model LandingRole {
+  id_landing_role Int      @id @default(autoincrement())
+  tag             String
+  judul           String
+  deskripsi       String
+  item1           String
+  item2           String
+  item3           String
+  urutan          Int      @default(0)
+  dibuatPada      DateTime @default(now())
+
+  @@map("landing_role")
+}
+
+// Tabel TESTIMONIAL — testimoni landing page
+model Testimonial {
+  id_testimonial Int      @id @default(autoincrement())
+  nama           String
+  peran          String
+  kutipan        String
+  avatar_inisial String   @default("")
+  urutan         Int      @default(0)
+  dibuatPada     DateTime @default(now())
+
+  @@map("testimonial")
+}
+
+// Tabel ASPIRASI — aspirasi & masukan dari anggota
+model Aspirasi {
+  id_aspirasi   Int            @id @default(autoincrement())
+  judul         String
+  isi           String         @db.Text
+  kategori      String         @default("Umum")
+  status        StatusAspirasi @default(MENUNGGU)
+  penulis_id    Int
+  kelas         String?
+  balasan       String?        @db.Text
+  dibuatPada    DateTime       @default(now())
+  diperbaruiPada DateTime      @updatedAt
+
+  penulis Pengguna @relation(fields: [penulis_id], references: [id_pengguna])
+
+  @@map("aspirasi")
+}
+
+// Tabel EVENT — event OSIS
+model Event {
+  id_event        Int      @id @default(autoincrement())
+  judul           String
+  deskripsi       String
+  tanggal         DateTime
+  lokasi          String
+  kuota           Int      @default(50)
+  dibuatPada      DateTime @default(now())
+
+  registrasi RegistrasiEvent[]
+  absensi    Absensi[]
+
+  @@map("event")
+}
+
+// Tabel REGISTRASI_EVENT — pendaftaran anggota ke event
+model RegistrasiEvent {
+  id_registrasi Int             @id @default(autoincrement())
+  event_id      Int
+  pengguna_id   Int
+  status        StatusRegistrasi @default(TERDAFTAR)
+  checkinPada   DateTime?
+  dibuatPada    DateTime        @default(now())
+
+  event    Event    @relation(fields: [event_id], references: [id_event])
+  pengguna Pengguna @relation(fields: [pengguna_id], references: [id_pengguna])
+
+  @@unique([event_id, pengguna_id])
+  @@map("registrasi_event")
+}
+
+// Tabel PROKER — program kerja
+model Proker {
+  id_proker     Int         @id @default(autoincrement())
+  judul         String
+  deskripsi     String      @db.Text
+  divisi        String
+  status        StatusProker @default(RENCANA)
+  targetSelesai DateTime?
+  pembuat_id    Int
+  dibuatPada    DateTime    @default(now())
+
+  pembuat Pengguna @relation("ProkerPembuat", fields: [pembuat_id], references: [id_pengguna])
+
+  @@map("proker")
+}
+
+// Tabel TRANSAKSI_KEUANGAN — pemasukan/pengeluaran
+model TransaksiKeuangan {
+  id_transaksi   Int             @id @default(autoincrement())
+  judul          String
+  jumlah         Decimal         @db.Decimal(12, 2)
+  jenis          JenisTransaksi
+  kategori       String          @default("Umum")
+  keterangan     String?
+  dicatat_oleh   Int
+  tanggal        DateTime        @default(now())
+  dibuatPada     DateTime        @default(now())
+
+  pencatat Pengguna @relation(fields: [dicatat_oleh], references: [id_pengguna])
+
+  @@map("transaksi_keuangan")
+}
+
+// Tabel ABSENSI — kehadiran event
+model Absensi {
+  id_absensi   Int      @id @default(autoincrement())
+  pengguna_id  Int
+  event_id     Int
+  hadir        Boolean  @default(false)
+  waktuHadir   DateTime?
+  dibuatPada   DateTime @default(now())
+
+  pengguna Pengguna @relation(fields: [pengguna_id], references: [id_pengguna])
+  event    Event    @relation(fields: [event_id], references: [id_event])
+
+  @@unique([pengguna_id, event_id])
+  @@map("absensi")
+}
+
+// Tabel POIN_KEAKTIFAN — poin keaktifan anggota
+model PoinKeaktifan {
+  id_poin     Int      @id @default(autoincrement())
+  pengguna_id Int
+  event_id    Int?
+  jumlah      Int      @default(1)
+  keterangan  String
+  dibuatPada  DateTime @default(now())
+
+  pengguna Pengguna @relation(fields: [pengguna_id], references: [id_pengguna])
+
+  @@map("poin_keaktifan")
+}
+
+// Tabel ARSIP — e-archieving dokumen
+model Arsip {
+  id_arsip    Int      @id @default(autoincrement())
+  judul       String
+  kategori    String   @default("Umum")
+  deskripsi   String?  @db.Text
+  file_nama   String?
+  url         String?
+  pembuat_id  Int
+  dibuatPada  DateTime @default(now())
+
+  pembuat Pengguna @relation("ArsipPembuat", fields: [pembuat_id], references: [id_pengguna])
+
+  @@map("arsip")
+}
+
+// Tabel LPJ — laporan pertanggungjawaban
+model Lpj {
+  id_lpj       Int        @id @default(autoincrement())
+  judul        String
+  isi          String     @db.Text
+  status       StatusLpj  @default(DIAJUKAN)
+  pembuat_id   Int
+  reviewer_id  Int?
+  catatan      String?    @db.Text
+  diajukanPada DateTime   @default(now())
+  direviewPada DateTime?
+
+  pembuat  Pengguna  @relation("LpjPembuat", fields: [pembuat_id], references: [id_pengguna])
+  reviewer Pengguna? @relation("LpjReviewer", fields: [reviewer_id], references: [id_pengguna])
+
+  @@map("lpj")
+}

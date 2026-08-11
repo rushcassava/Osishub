@@ -1,0 +1,90 @@
+<svg width="1600" height="900" viewBox="0 0 1600 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1600" y2="900" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#EDF2FC"/>
+      <stop offset="0.55" stop-color="#F6F7FA"/>
+      <stop offset="1" stop-color="#E3EAF7"/>
+    </linearGradient>
+    <linearGradient id="blob1" x1="0" y1="0" x2="600" y2="600" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#2E5AAC" stop-opacity="0.18"/>
+      <stop offset="1" stop-color="#3E74E0" stop-opacity="0.04"/>
+    </linearGradient>
+    <linearGradient id="blob2" x1="0" y1="0" x2="500" y2="500" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#C9962A" stop-opacity="0.16"/>
+      <stop offset="1" stop-color="#C9962A" stop-opacity="0.03"/>
+    </linearGradient>
+    <linearGradient id="blob3" x1="0" y1="0" x2="700" y2="700" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0A101F" stop-opacity="0.14"/>
+      <stop offset="1" stop-color="#0A101F" stop-opacity="0.03"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1600" height="900" fill="url(#bg)"/>
+
+  <!-- Blobs halus -->
+  <ellipse cx="1320" cy="-60" rx="620" ry="480" fill="url(#blob1)"/>
+  <ellipse cx="180" cy="880" rx="560" ry="440" fill="url(#blob2)"/>
+  <ellipse cx="830" cy="520" rx="700" ry="420" fill="url(#blob3)"/>
+
+  <!-- Grid titik halus -->
+  <g fill="#2E5AAC" fill-opacity="0.08">
+    <circle cx="120" cy="120" r="3"/>
+    <circle cx="360" cy="120" r="3"/>
+    <circle cx="600" cy="120" r="3"/>
+    <circle cx="840" cy="120" r="3"/>
+    <circle cx="1080" cy="120" r="3"/>
+    <circle cx="1320" cy="120" r="3"/>
+    <circle cx="1480" cy="120" r="3"/>
+
+    <circle cx="120" cy="300" r="3"/>
+    <circle cx="360" cy="300" r="3"/>
+    <circle cx="600" cy="300" r="3"/>
+    <circle cx="840" cy="300" r="3"/>
+    <circle cx="1080" cy="300" r="3"/>
+    <circle cx="1320" cy="300" r="3"/>
+    <circle cx="1480" cy="300" r="3"/>
+
+    <circle cx="120" cy="480" r="3"/>
+    <circle cx="360" cy="480" r="3"/>
+    <circle cx="600" cy="480" r="3"/>
+    <circle cx="840" cy="480" r="3"/>
+    <circle cx="1080" cy="480" r="3"/>
+    <circle cx="1320" cy="480" r="3"/>
+    <circle cx="1480" cy="480" r="3"/>
+
+    <circle cx="120" cy="660" r="3"/>
+    <circle cx="360" cy="660" r="3"/>
+    <circle cx="600" cy="660" r="3"/>
+    <circle cx="840" cy="660" r="3"/>
+    <circle cx="1080" cy="660" r="3"/>
+    <circle cx="1320" cy="660" r="3"/>
+    <circle cx="1480" cy="660" r="3"/>
+
+    <circle cx="120" cy="820" r="3"/>
+    <circle cx="360" cy="820" r="3"/>
+    <circle cx="600" cy="820" r="3"/>
+    <circle cx="840" cy="820" r="3"/>
+    <circle cx="1080" cy="820" r="3"/>
+    <circle cx="1320" cy="820" r="3"/>
+    <circle cx="1480" cy="820" r="3"/>
+  </g>
+
+  <!-- Pola geometric garis halus -->
+  <g stroke="#2E5AAC" stroke-opacity="0.06" stroke-width="1.5">
+    <path d="M0 780 L300 640 L620 780 L950 620 L1300 780 L1600 640"/>
+    <path d="M0 840 L320 700 L700 860 L1080 700 L1600 860"/>
+    <path d="M80 900 L420 760 L760 900 L1180 760 L1600 900"/>
+  </g>
+
+  <!-- Bentuk aksen kecil -->
+  <g fill="#C9962A" fill-opacity="0.12">
+    <path d="M1420 130 L1446 175 L1420 220 L1394 175 Z"/>
+    <path d="M1460 160 L1474 184 L1460 208 L1446 184 Z" fill="#2E5AAC" fill-opacity="0.1"/>
+  </g>
+
+  <g fill="#0A101F" fill-opacity="0.05">
+    <rect x="90" y="640" width="52" height="52" rx="12" transform="rotate(-8 90 640)"/>
+    <rect x="300" y="90" width="36" height="36" rx="9" transform="rotate(12 300 90)"/>
+  </g>
+</svg>
+

@@ -1,0 +1,15 @@
+✅ Seed selesai. Akun demo (password: password123):
+   - anggota01 (ANGGOTA)
+   - perwakilan01 (PERWAKILAN_KELAS)
+   - pengurus01 (PENGURUS)
+   - 12 modul dashboard (AKTIF)
+   - 8 fitur landing page
+   - 4 statistik
+   - 3 peran
+   - 4 testimonial
+   - 3 aspirasi demo
+   - 3 event demo
+   - 3 proker demo
+   - 4 transaksi demo
+   - 3 arsip demo
+   - 2 LPJ demo

@@ -1,0 +1,102 @@
+
+> osis-hub@1.0.0 build
+> next build
+
+  ▲ Next.js 14.2.35
+  - Environments: .env
+
+   Creating an optimized production build ...
+<w> [webpack.cache.PackFileCacheStrategy/webpack.FileSystemInfo] Resolving '../../../typescript/lib/typescript' in c:\laragon\www\osis-hub-nextjss\osis-hub-nextjs\node_modules\next\dist\build for build dependencies doesn't lead to expected result 'C:\laragon\www\osis-hub-nextjss\osis-hub-nextjs\node_modules\typescript\lib\typescript.js', but to 'c:\laragon\www\osis-hub-nextjss\osis-hub-nextjs\node_modules\typescript\lib\typescript.js' instead. Resolving dependencies are ignored for this path.
+<w>  at resolve commonjs file ../../../typescript/lib/typescript (expected C:\laragon\www\osis-hub-nextjss\osis-hub-nextjs\node_modules\typescript\lib\typescript.js)
+<w>  at file dependencies c:\laragon\www\osis-hub-nextjss\osis-hub-nextjs\node_modules\next\dist\build\load-jsconfig.js
+<w>  at file c:\laragon\www\osis-hub-nextjss\osis-hub-nextjs\node_modules\next\dist\build\load-jsconfig.js
+<w>  at file dependencies c:\laragon\www\osis-hub-nextjss\osis-hub-nextjs\node_modules\next\dist\build\webpack-config.js
+<w>  at file c:\laragon\www\osis-hub-nextjss\osis-hub-nextjs\node_modules\next\dist\build\webpack-config.js
+<w>  at file dependencies c:\laragon\www\osis-hub-nextjss\osis-hub-nextjs\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js
+<w>  at file c:\laragon\www\osis-hub-nextjss\osis-hub-nextjs\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js
+<w>  at resolve commonjs c:\laragon\www\osis-hub-nextjss\osis-hub-nextjs\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js
+<w> [webpack.cache.PackFileCacheStrategy/webpack.FileSystemInfo] Resolving '../../../typescript/lib/typescript' in c:\laragon\www\osis-hub-nextjss\osis-hub-nextjs\node_modules\next\dist\build for build dependencies doesn't lead to expected result 'C:\laragon\www\osis-hub-nextjss\osis-hub-nextjs\node_modules\typescript\lib\typescript.js', but to 'c:\laragon\www\osis-hub-nextjss\osis-hub-nextjs\node_modules\typescript\lib\typescript.js' instead. Resolving dependencies are ignored for this path.
+<w>  at resolve commonjs file ../../../typescript/lib/typescript (expected C:\laragon\www\osis-hub-nextjss\osis-hub-nextjs\node_modules\typescript\lib\typescript.js)
+<w>  at file dependencies c:\laragon\www\osis-hub-nextjss\osis-hub-nextjs\node_modules\next\dist\build\load-jsconfig.js
+<w>  at file c:\laragon\www\osis-hub-nextjss\osis-hub-nextjs\node_modules\next\dist\build\load-jsconfig.js
+<w>  at file dependencies c:\laragon\www\osis-hub-nextjss\osis-hub-nextjs\node_modules\next\dist\build\webpack-config.js
+<w>  at file c:\laragon\www\osis-hub-nextjss\osis-hub-nextjs\node_modules\next\dist\build\webpack-config.js
+<w>  at file dependencies c:\laragon\www\osis-hub-nextjss\osis-hub-nextjs\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js
+<w>  at file c:\laragon\www\osis-hub-nextjss\osis-hub-nextjs\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js
+<w>  at resolve commonjs c:\laragon\www\osis-hub-nextjss\osis-hub-nextjs\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js
+<w> [webpack.cache.PackFileCacheStrategy/webpack.FileSystemInfo] Resolving '../../../typescript/lib/typescript' in c:\laragon\www\osis-hub-nextjss\osis-hub-nextjs\node_modules\next\dist\build for build dependencies doesn't lead to expected result 'C:\laragon\www\osis-hub-nextjss\osis-hub-nextjs\node_modules\typescript\lib\typescript.js', but to 'c:\laragon\www\osis-hub-nextjss\osis-hub-nextjs\node_modules\typescript\lib\typescript.js' instead. Resolving dependencies are ignored for this path.
+<w>  at resolve commonjs file ../../../typescript/lib/typescript (expected C:\laragon\www\osis-hub-nextjss\osis-hub-nextjs\node_modules\typescript\lib\typescript.js)
+<w>  at file dependencies c:\laragon\www\osis-hub-nextjss\osis-hub-nextjs\node_modules\next\dist\build\load-jsconfig.js
+<w>  at file c:\laragon\www\osis-hub-nextjss\osis-hub-nextjs\node_modules\next\dist\build\load-jsconfig.js
+<w>  at file dependencies c:\laragon\www\osis-hub-nextjss\osis-hub-nextjs\node_modules\next\dist\build\webpack-config.js
+<w>  at file c:\laragon\www\osis-hub-nextjss\osis-hub-nextjs\node_modules\next\dist\build\webpack-config.js
+<w>  at file dependencies c:\laragon\www\osis-hub-nextjss\osis-hub-nextjs\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js
+<w>  at file c:\laragon\www\osis-hub-nextjss\osis-hub-nextjs\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js
+<w>  at resolve commonjs c:\laragon\www\osis-hub-nextjss\osis-hub-nextjs\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/39) ...
+   Generating static pages (9/39) 
+   Generating static pages (19/39) 
+   Generating static pages (29/39) 
+ ✓ Generating static pages (39/39)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                              Size     First Load JS
+┌ ○ /                                    152 B          87.4 kB
+├ ○ /_not-found                          873 B          88.1 kB
+├ ƒ /api/absen                           0 B                0 B
+├ ƒ /api/arsip                           0 B                0 B
+├ ƒ /api/arsip/[id]                      0 B                0 B
+├ ƒ /api/aspirasi                        0 B                0 B
+├ ƒ /api/aspirasi/[id]                   0 B                0 B
+├ ƒ /api/auth/login                      0 B                0 B
+├ ƒ /api/auth/logout                     0 B                0 B
+├ ƒ /api/event                           0 B                0 B
+├ ƒ /api/event/[id]                      0 B                0 B
+├ ƒ /api/event/checkin                   0 B                0 B
+├ ƒ /api/event/daftar                    0 B                0 B
+├ ƒ /api/keuangan                        0 B                0 B
+├ ƒ /api/keuangan/[id]                   0 B                0 B
+├ ○ /api/landing/features                0 B                0 B
+├ ○ /api/landing/roles                   0 B                0 B
+├ ○ /api/landing/stats                   0 B                0 B
+├ ○ /api/landing/testimonials            0 B                0 B
+├ ƒ /api/lpj                             0 B                0 B
+├ ƒ /api/lpj/[id]                        0 B                0 B
+├ ƒ /api/modules                         0 B                0 B
+├ ƒ /api/pengguna                        0 B                0 B
+├ ƒ /api/pengguna/[id]                   0 B                0 B
+├ ƒ /api/proker                          0 B                0 B
+├ ƒ /api/proker/[id]                     0 B                0 B
+├ ƒ /dashboard                           152 B          87.4 kB
+├ ƒ /dashboard/anggota                   152 B          87.4 kB
+├ ƒ /dashboard/anggota/absen             2.48 kB        89.7 kB
+├ ƒ /dashboard/anggota/aspirasi          135 B          90.7 kB
+├ ƒ /dashboard/anggota/event             133 B          90.6 kB
+├ ƒ /dashboard/pengurus                  152 B          87.4 kB
+├ ƒ /dashboard/pengurus/agenda           134 B          90.5 kB
+├ ƒ /dashboard/pengurus/arsip            3.01 kB        90.3 kB
+├ ƒ /dashboard/pengurus/aspirasi         135 B          90.7 kB
+├ ƒ /dashboard/pengurus/event            135 B          90.6 kB
+├ ƒ /dashboard/pengurus/keuangan         135 B          90.6 kB
+├ ƒ /dashboard/pengurus/lpj              3.07 kB        90.3 kB
+├ ƒ /dashboard/pengurus/pengguna         3.68 kB        90.9 kB
+├ ƒ /dashboard/perwakilan                152 B          87.4 kB
+├ ƒ /dashboard/perwakilan/agenda         134 B          90.5 kB
+├ ƒ /dashboard/perwakilan/aspirasi       135 B          90.7 kB
+├ ƒ /dashboard/perwakilan/keuangan       135 B          90.6 kB
+└ ○ /login                               1.68 kB        88.9 kB
++ First Load JS shared by all            87.3 kB
+  ├ chunks/117-bceba54427497846.js       31.7 kB
+  ├ chunks/fd9d1056-72ef1b92e01f1388.js  53.6 kB
+  └ other shared chunks (total)          1.89 kB
+
+
+ƒ Middleware                             32.5 kB
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
