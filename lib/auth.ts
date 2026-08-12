@@ -35,7 +35,8 @@ export async function verifySession(token: string | undefined) {
 
 // Helper untuk dipakai di Server Component / Route Handler (butuh next/headers).
 export async function getSession() {
-  const token = cookies().get(SESSION_COOKIE)?.value;
+  const cookieStore = await cookies(); // Tambahkan await di sini
+  const token = cookieStore.get(SESSION_COOKIE)?.value;
   return verifySession(token);
 }
 
