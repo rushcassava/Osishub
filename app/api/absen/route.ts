@@ -8,20 +8,20 @@ export async function GET() {
   if (!session) return jsonError("Tidak terautentikasi.", 401);
 
   try {
-    // Riwayat absensi (kehadiran event) untuk user yang login
-    const absensi = await prisma.absensi.findMany({
-      where: { pengguna_id: session.id },
-      orderBy: { waktuHadir: "desc" },
-      include: { event: { select: { judul: true, tanggal: true } } },
-    });
+    // Jalankan kedua query secara paralel agar lebih cepat dan efisien
+    const [absensi, poinRows] = await Promise.all([
+      prisma.absensi.findMany({
+        where: { pengguna_id: session.id },
+        orderBy: { waktuHadir: "desc" },
+        include: { event: { select: { judul: true, tanggal: true } } },
+      }),
+      prisma.poinKeaktifan.findMany({
+        where: { pengguna_id: session.id },
+        orderBy: { dibuatPada: "desc" },
+      }),
+    ]);
 
-    // Total poin keaktifan
-    const poinRows = await prisma.poinKeaktifan.findMany({
-      where: { pengguna_id: session.id },
-      orderBy: { dibuatPada: "desc" },
-    });
     const totalPoin = poinRows.reduce((sum, p) => sum + p.jumlah, 0);
-
     const totalHadir = absensi.filter((a) => a.hadir).length;
 
     return NextResponse.json({
@@ -35,4 +35,3 @@ export async function GET() {
     return jsonError("Terjadi kesalahan pada server.", 500);
   }
 }
-
