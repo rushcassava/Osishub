@@ -15,7 +15,7 @@ export default function AnggotaEventPage() {
 
     try {
       // Contoh request ke API backend untuk check-in / absensi event
-      const res = await fetch("/api/absensi/checkin", {
+      const res = await fetch("/api/absen", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ qrData: decodedText }),
