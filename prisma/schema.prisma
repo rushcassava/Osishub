@@ -152,16 +152,16 @@ model Testimonial {
 
 // Tabel ASPIRASI — aspirasi & masukan dari anggota
 model Aspirasi {
-  id_aspirasi   Int            @id @default(autoincrement())
-  judul         String
-  isi           String         @db.Text
-  kategori      String         @default("Umum")
-  status        StatusAspirasi @default(MENUNGGU)
-  penulis_id    Int
-  kelas         String?
-  balasan       String?        @db.Text
-  dibuatPada    DateTime       @default(now())
-  diperbaruiPada DateTime      @updatedAt
+  id_aspirasi    Int            @id @default(autoincrement())
+  judul          String
+  isi            String         @db.Text
+  kategori       String         @default("Umum")
+  status         StatusAspirasi @default(MENUNGGU)
+  penulis_id     Int
+  kelas          String?
+  balasan        String?        @db.Text
+  dibuatPada     DateTime       @default(now())
+  diperbaruiPada DateTime       @updatedAt
 
   penulis Pengguna @relation(fields: [penulis_id], references: [id_pengguna])
 
@@ -176,6 +176,7 @@ model Event {
   tanggal         DateTime
   lokasi          String
   kuota           Int      @default(50)
+  qr_code         String?  @unique // <--- TAMBAHAN KOLOM QR CODE DI SINI
   dibuatPada      DateTime @default(now())
 
   registrasi RegistrasiEvent[]
@@ -186,12 +187,12 @@ model Event {
 
 // Tabel REGISTRASI_EVENT — pendaftaran anggota ke event
 model RegistrasiEvent {
-  id_registrasi Int             @id @default(autoincrement())
+  id_registrasi Int              @id @default(autoincrement())
   event_id      Int
   pengguna_id   Int
   status        StatusRegistrasi @default(TERDAFTAR)
   checkinPada   DateTime?
-  dibuatPada    DateTime        @default(now())
+  dibuatPada    DateTime         @default(now())
 
   event    Event    @relation(fields: [event_id], references: [id_event])
   pengguna Pengguna @relation(fields: [pengguna_id], references: [id_pengguna])
@@ -202,14 +203,14 @@ model RegistrasiEvent {
 
 // Tabel PROKER — program kerja
 model Proker {
-  id_proker     Int         @id @default(autoincrement())
+  id_proker     Int          @id @default(autoincrement())
   judul         String
-  deskripsi     String      @db.Text
+  deskripsi     String       @db.Text
   divisi        String
   status        StatusProker @default(RENCANA)
   targetSelesai DateTime?
   pembuat_id    Int
-  dibuatPada    DateTime    @default(now())
+  dibuatPada    DateTime     @default(now())
 
   pembuat Pengguna @relation("ProkerPembuat", fields: [pembuat_id], references: [id_pengguna])
 
@@ -218,15 +219,15 @@ model Proker {
 
 // Tabel TRANSAKSI_KEUANGAN — pemasukan/pengeluaran
 model TransaksiKeuangan {
-  id_transaksi   Int             @id @default(autoincrement())
+  id_transaksi   Int            @id @default(autoincrement())
   judul          String
-  jumlah         Decimal         @db.Decimal(12, 2)
+  jumlah         Decimal        @db.Decimal(12, 2)
   jenis          JenisTransaksi
-  kategori       String          @default("Umum")
+  kategori       String         @default("Umum")
   keterangan     String?
   dicatat_oleh   Int
-  tanggal        DateTime        @default(now())
-  dibuatPada     DateTime        @default(now())
+  tanggal        DateTime       @default(now())
+  dibuatPada     DateTime       @default(now())
 
   pencatat Pengguna @relation(fields: [dicatat_oleh], references: [id_pengguna])
 

@@ -36,37 +36,64 @@ export async function GET() {
   }
 }
 
-// 2. Fungsi POST untuk memproses Check-In dari Scan QR
+// 2. Fungsi POST untuk memproses Check-In dari Scan QR + Tambah Poin Otomatis
 export async function POST(req: NextRequest) {
   const { session, error } = await requireSession();
   if (error) return error;
   if (!session) return jsonError("Tidak terautentikasi.", 401);
 
   try {
-    const body = await req.json();
-    const { qrData } = body;
+    const { qrData } = await req.json();
 
     if (!qrData) {
       return jsonError("Data QR tidak valid.", 400);
     }
 
-    // Di sini kamu bisa tambahkan logika database untuk mencatat kehadiran berdasarkan qrData
-    // Contoh:
-    // const event = await prisma.event.findFirst({ where: { tokenQR: qrData } });
-    // if (!event) return jsonError("Event atau QR code tidak ditemukan/kedaluwarsa.", 404);
-    // 
-    // await prisma.absensi.create({
-    //   data: {
-    //     pengguna_id: session.id,
-    //     event_id: event.id,
-    //     hadir: true,
-    //     waktuHadir: new Date(),
-    //   }
-    // });
+    // A. Cari event berdasarkan kolom qr_code
+    const event = await prisma.event.findFirst({ 
+      where: { qr_code: qrData } 
+    });
+
+    if (!event) {
+      return jsonError("Event atau QR code tidak ditemukan.", 404);
+    }
+
+    // B. Cek apakah user sudah melakukan absen di event ini sebelumnya
+    const existingAbsensi = await prisma.absensi.findFirst({
+      where: {
+        pengguna_id: session.id,
+        event_id: event.id_event,
+      },
+    });
+
+    if (existingAbsensi) {
+      return jsonError("Anda sudah melakukan check-in untuk event ini.", 400);
+    }
+
+    // C. Transaksi pencatatan absensi dan penambahan poin
+    await prisma.$transaction(async (tx) => {
+      await tx.absensi.create({
+        data: {
+          pengguna_id: session.id,
+          event_id: event.id_event,
+          hadir: true,
+          waktuHadir: new Date(),
+        },
+      });
+
+      await tx.poinKeaktifan.create({
+        data: {
+          pengguna_id: session.id,
+          event_id: event.id_event,
+          jumlah: 10,
+          keterangan: `Hadir dalam kegiatan: ${event.judul}`,
+        },
+      });
+    });
 
     return NextResponse.json({
       success: true,
-      message: "Berhasil melakukan Check-In Absensi!",
+      message: `Berhasil melakukan Check-In untuk event: ${event.judul}!`,
     });
   } catch (err) {
     console.error("Error check-in absen:", err);
