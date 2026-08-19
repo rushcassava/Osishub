@@ -23,7 +23,6 @@ export async function GET() {
         _count: {
           select: {
             aspirasi: true,
-            registrasi: true,
             absensi: true,
             poin: true,
             transaksi: true,
