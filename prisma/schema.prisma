@@ -33,12 +33,6 @@ enum StatusAspirasi {
   DITOLAK
 }
 
-enum StatusRegistrasi {
-  TERDAFTAR
-  HADIR
-  BATAL
-}
-
 enum StatusProker {
   RENCANA
   BERJALAN
@@ -70,7 +64,6 @@ model Pengguna {
   dibuatPada  DateTime @default(now())
 
   aspirasi       Aspirasi[]
-  registrasi     RegistrasiEvent[]
   absensi        Absensi[]
   poin           PoinKeaktifan[]
   transaksi      TransaksiKeuangan[]
@@ -175,30 +168,13 @@ model Event {
   deskripsi       String
   tanggal         DateTime
   lokasi          String
-  kuota           Int      @default(50)
   qr_code         String?  @unique // <--- TAMBAHAN KOLOM QR CODE DI SINI
   dibuatPada      DateTime @default(now())
 
-  registrasi RegistrasiEvent[]
   absensi    Absensi[]
+  poin       PoinKeaktifan[]
 
   @@map("event")
-}
-
-// Tabel REGISTRASI_EVENT — pendaftaran anggota ke event
-model RegistrasiEvent {
-  id_registrasi Int              @id @default(autoincrement())
-  event_id      Int
-  pengguna_id   Int
-  status        StatusRegistrasi @default(TERDAFTAR)
-  checkinPada   DateTime?
-  dibuatPada    DateTime         @default(now())
-
-  event    Event    @relation(fields: [event_id], references: [id_event])
-  pengguna Pengguna @relation(fields: [pengguna_id], references: [id_pengguna])
-
-  @@unique([event_id, pengguna_id])
-  @@map("registrasi_event")
 }
 
 // Tabel PROKER — program kerja
@@ -244,7 +220,7 @@ model Absensi {
   dibuatPada   DateTime @default(now())
 
   pengguna Pengguna @relation(fields: [pengguna_id], references: [id_pengguna])
-  event    Event    @relation(fields: [event_id], references: [id_event])
+  event    Event    @relation(fields: [event_id], references: [id_event], onDelete: Cascade)
 
   @@unique([pengguna_id, event_id])
   @@map("absensi")
@@ -260,6 +236,7 @@ model PoinKeaktifan {
   dibuatPada  DateTime @default(now())
 
   pengguna Pengguna @relation(fields: [pengguna_id], references: [id_pengguna])
+  event    Event?   @relation(fields: [event_id], references: [id_event], onDelete: Cascade)
 
   @@map("poin_keaktifan")
 }

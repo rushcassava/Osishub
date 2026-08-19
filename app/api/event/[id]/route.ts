@@ -17,7 +17,7 @@ export async function GET(
     const event = await prisma.event.findUnique({
       where: { id_event: id },
       include: {
-        registrasi: {
+        absensi: {
           include: { pengguna: { select: { nama: true, kelas: true, username: true } } },
         },
       },
@@ -44,6 +44,10 @@ export async function DELETE(
   try {
     const existing = await prisma.event.findUnique({ where: { id_event: id } });
     if (!existing) return jsonError("Event tidak ditemukan.", 404);
+
+    // Hapus data terkait secara manual untuk menghindari foreign key constraint error
+    await prisma.poinKeaktifan.deleteMany({ where: { event_id: id } });
+    await prisma.absensi.deleteMany({ where: { event_id: id } });
 
     await prisma.event.delete({ where: { id_event: id } });
     return NextResponse.json({ success: true });

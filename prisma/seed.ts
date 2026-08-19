@@ -230,12 +230,9 @@ async function main() {
     eventIds.push(created.id_event);
   }
 
-  // Registrasi anggota01 ke event pertama & kedua
-  await prisma.registrasiEvent.create({
-    data: { event_id: eventIds[0], pengguna_id: anggota.id_pengguna, status: "TERDAFTAR" },
-  });
-  await prisma.registrasiEvent.create({
-    data: { event_id: eventIds[1], pengguna_id: anggota.id_pengguna, status: "HADIR", checkinPada: new Date() },
+  // Absensi anggota01 ke event kedua
+  await prisma.absensi.create({
+    data: { event_id: eventIds[1], pengguna_id: anggota.id_pengguna, hadir: true, waktuHadir: new Date() },
   });
 
   // ──────────────────────────────────────────────
@@ -268,9 +265,7 @@ async function main() {
   // ──────────────────────────────────────────────
   // 11. Data Demo — Absensi & Poin
   // ──────────────────────────────────────────────
-  await prisma.absensi.create({
-    data: { pengguna_id: anggota.id_pengguna, event_id: eventIds[1], hadir: true, waktuHadir: new Date() },
-  });
+  // Absensi sudah ditambahkan di bagian Event di atas.
 
   const poinDemo = [
     { pengguna_id: anggota.id_pengguna, event_id: eventIds[1], jumlah: 5, keterangan: "Hadir Bakti Sosial Panti Asuhan" },

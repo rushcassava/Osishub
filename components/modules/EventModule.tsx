@@ -22,9 +22,7 @@ type EventItem = {
   deskripsi: string;
   tanggal: string;
   lokasi: string;
-  kuota: number;
-  jumlah_peserta: number;
-  terdaftar: string | null;
+  hadir: boolean;
 };
 
 export default function EventModule({ mode }: { mode: Mode }) {
@@ -37,7 +35,6 @@ export default function EventModule({ mode }: { mode: Mode }) {
   const [deskripsi, setDeskripsi] = useState("");
   const [tanggal, setTanggal] = useState("");
   const [lokasi, setLokasi] = useState("");
-  const [kuota, setKuota] = useState("50");
 
   // QR Absensi Pengurus
   const [activeQrEvent, setActiveQrEvent] = useState<{ id: number; judul: string } | null>(null);
@@ -91,30 +88,17 @@ export default function EventModule({ mode }: { mode: Mode }) {
     const res = await fetch("/api/event", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ judul, deskripsi, tanggal, lokasi, kuota }),
+      body: JSON.stringify({ judul, deskripsi, tanggal, lokasi }),
     });
     if (res.ok) {
       setJudul("");
       setDeskripsi("");
       setTanggal("");
       setLokasi("");
-      setKuota("50");
       setMessage("Event berhasil dibuat.");
       setTimeout(() => setMessage(""), 3000);
       load();
     }
-  }
-
-  async function daftar(event_id: number) {
-    const res = await fetch("/api/event/daftar", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ event_id }),
-    });
-    const data = await res.json();
-    setMessage(data.error || "Pendaftaran berhasil!");
-    setTimeout(() => setMessage(""), 3000);
-    if (res.ok) load();
   }
 
   async function hapusEvent(event_id: number) {
@@ -136,16 +120,8 @@ export default function EventModule({ mode }: { mode: Mode }) {
               <TextInput label="Judul Event" placeholder="mis. Latihan Dasar Kepemimpinan" value={judul} onChange={(e) => setJudul(e.target.value)} required />
               <TextInput label="Lokasi" placeholder="mis. Aula Utama" value={lokasi} onChange={(e) => setLokasi(e.target.value)} required />
             </div>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4">
               <TextInput label="Tanggal & Waktu" type="datetime-local" value={tanggal} onChange={(e) => setTanggal(e.target.value)} required />
-              <SelectInput label="Kuota Peserta" value={kuota} onChange={(e) => setKuota(e.target.value)}>
-                <option value="20">20</option>
-                <option value="40">40</option>
-                <option value="50">50</option>
-                <option value="80">80</option>
-                <option value="100">100</option>
-                <option value="200">200</option>
-              </SelectInput>
             </div>
             <TextArea label="Deskripsi" placeholder="Deskripsi singkat kegiatan..." value={deskripsi} onChange={(e) => setDeskripsi(e.target.value)} required />
             <div className="flex items-center gap-3">
@@ -168,18 +144,13 @@ export default function EventModule({ mode }: { mode: Mode }) {
         ) : (
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {events.map((e) => {
-              const sudahHadir = e.terdaftar === "HADIR";
-              const sudahDaftar = e.terdaftar === "TERDAFTAR";
-              const penuh = e.jumlah_peserta >= e.kuota;
+              const sudahHadir = e.hadir;
               return (
                 <Card key={e.id_event}>
                   <div className="mb-2 flex items-center gap-2">
-                    <Badge variant={sudahHadir ? "green" : sudahDaftar ? "blue" : "gray"}>
-                      {sudahHadir ? "Hadir" : sudahDaftar ? "Terdaftar" : "Belum daftar"}
+                    <Badge variant={sudahHadir ? "green" : "gray"}>
+                      {sudahHadir ? "Hadir" : "Belum Hadir"}
                     </Badge>
-                    <span className="text-[12.5px] text-inkFaint">
-                      {e.jumlah_peserta}/{e.kuota} peserta
-                    </span>
                   </div>
                   <h4 className="mb-1 text-[16px] font-semibold text-ink">{e.judul}</h4>
                   <p className="mb-2 text-[13px] leading-relaxed text-inkSoft">{e.deskripsi}</p>
@@ -190,12 +161,7 @@ export default function EventModule({ mode }: { mode: Mode }) {
 
                   {mode === "anggota" ? (
                     <div className="flex flex-wrap gap-2">
-                      {!sudahDaftar && !sudahHadir && (
-                        <Button variant="primary" className="!py-2 text-[12.5px]" disabled={penuh} onClick={() => daftar(e.id_event)}>
-                          {penuh ? "Kuota Penuh" : "Daftar Sekarang"}
-                        </Button>
-                      )}
-                      {sudahDaftar && (
+                      {!sudahHadir && (
                         <span className="text-[13px] font-semibold text-blue">
                           Silakan scan QR Code di layar Panitia untuk check-in
                         </span>

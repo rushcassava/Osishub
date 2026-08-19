@@ -7,12 +7,12 @@ export async function GET() {
   if (error) return error;
 
   try {
-    // Ambil semua event beserta total peserta dan status registrasi user
     const events = await prisma.event.findMany({
       orderBy: { tanggal: "asc" },
       include: {
-        registrasi: {
-          select: { pengguna_id: true, status: true },
+        absensi: {
+          where: { pengguna_id: session.id },
+          select: { hadir: true },
         },
       },
     });
@@ -23,9 +23,7 @@ export async function GET() {
       deskripsi: e.deskripsi,
       tanggal: e.tanggal,
       lokasi: e.lokasi,
-      kuota: e.kuota,
-      jumlah_peserta: e.registrasi.length,
-      terdaftar: e.registrasi.find((r) => r.pengguna_id === session.id)?.status || null,
+      hadir: e.absensi.length > 0 ? e.absensi[0].hadir : false,
     }));
 
     return NextResponse.json({ events: data });
@@ -40,7 +38,7 @@ export async function POST(req: NextRequest) {
   if (error) return error;
 
   try {
-    const { judul, deskripsi, tanggal, lokasi, kuota } = await req.json();
+    const { judul, deskripsi, tanggal, lokasi } = await req.json();
     if (!judul || !deskripsi || !tanggal || !lokasi) {
       return jsonError("Judul, deskripsi, tanggal, dan lokasi wajib diisi.");
     }
@@ -51,7 +49,6 @@ export async function POST(req: NextRequest) {
         deskripsi,
         tanggal: new Date(tanggal),
         lokasi,
-        kuota: parseInt(kuota, 10) || 50,
       },
     });
 

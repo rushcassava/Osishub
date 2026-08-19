@@ -22,23 +22,24 @@ export async function POST(req: NextRequest) {
       return jsonError("Token absensi tidak valid atau sudah kedaluwarsa.", 400);
     }
 
-    const registrasi = await prisma.registrasiEvent.findUnique({
+    const event = await prisma.event.findUnique({
+      where: { id_event: event_id },
+    });
+
+    if (!event) return jsonError("Event tidak ditemukan.", 404);
+
+    const absensi = await prisma.absensi.findUnique({
       where: {
-        event_id_pengguna_id: {
+        pengguna_id_event_id: {
           event_id: event_id,
           pengguna_id: session.id,
         },
       },
     });
 
-    if (!registrasi) return jsonError("Kamu belum terdaftar di event ini.", 404);
-    if (registrasi.status === "HADIR") return jsonError("Kamu sudah check-in.", 409);
-
-    const updated = await prisma.registrasiEvent.update({
-      where: { id_registrasi: registrasi.id_registrasi },
-      data: { status: "HADIR", checkinPada: new Date() },
-      include: { event: true },
-    });
+    if (absensi && absensi.hadir) {
+      return jsonError("Kamu sudah check-in untuk event ini.", 409);
+    }
 
     // Catat absensi
     await prisma.absensi.upsert({
@@ -57,17 +58,19 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Beri poin keaktifan
-    await prisma.poinKeaktifan.create({
-      data: {
-        pengguna_id: session.id,
-        event_id: event_id,
-        jumlah: 5,
-        keterangan: "Hadir & check-in event",
-      },
-    });
+    // Beri poin keaktifan jika belum pernah check-in sebelumnya
+    if (!absensi) {
+      await prisma.poinKeaktifan.create({
+        data: {
+          pengguna_id: session.id,
+          event_id: event_id,
+          jumlah: 5,
+          keterangan: "Hadir & check-in event",
+        },
+      });
+    }
 
-    return NextResponse.json({ registrasi: updated });
+    return NextResponse.json({ success: true, event });
   } catch (err) {
     console.error("Error check-in event:", err);
     return jsonError("Terjadi kesalahan pada server.", 500);

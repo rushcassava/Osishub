@@ -29,8 +29,8 @@ export default async function AnggotaDashboard() {
   const totalAspirasi = await prisma.aspirasi.count({
     where: { penulis_id: session?.id },
   });
-  const totalEvent = await prisma.registrasiEvent.count({
-    where: { pengguna_id: session?.id },
+  const totalEvent = await prisma.absensi.count({
+    where: { pengguna_id: session?.id, hadir: true },
   });
   const totalPoin = await prisma.poinKeaktifan.count({
     where: { pengguna_id: session?.id },
@@ -38,7 +38,7 @@ export default async function AnggotaDashboard() {
 
   const stats = [
     { label: "Aspirasiku", value: totalAspirasi, hint: "Aspirasi yang pernah diajukan", color: "text-cyan-600 bg-cyan-50", icon: <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg> },
-    { label: "Event Diikuti", value: totalEvent, hint: "Registrasi event yang kamu ikuti", color: "text-purple-600 bg-purple-50", icon: <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg> },
+    { label: "Event Diikuti", value: totalEvent, hint: "Event yang kamu hadiri", color: "text-purple-600 bg-purple-50", icon: <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg> },
     { label: "Poin Keaktifan", value: totalPoin, hint: "Total aktivitas tercatat", color: "text-emerald-600 bg-emerald-50", icon: <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg> },
   ];
 
