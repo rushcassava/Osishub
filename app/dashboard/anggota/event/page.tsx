@@ -3,37 +3,58 @@
 import { useState } from "react";
 import EventModule from "@/components/modules/EventModule";
 import QrScannerModal from "@/components/QrScannerModal";
+import { useRouter } from "next/navigation";
 
 export default function AnggotaEventPage() {
   const [showScanner, setShowScanner] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [scanError, setScanError] = useState<string | null>(null);
+  const router = useRouter();
 
   // Fungsi saat QR berhasil di-scan
-  const handleScanSuccess = async (decodedText: string) => {
+  // QR Code berisi URL: {origin}/dashboard/scan?token=<JWT>
+  const handleScanSuccess = (decodedText: string) => {
     setShowScanner(false);
-    setLoading(true);
+    setScanError(null);
 
     try {
-      // Contoh request ke API backend untuk check-in / absensi event
+      // Validasi bahwa hasil scan adalah URL yang valid
+      const url = new URL(decodedText);
+
+      // Pastikan URL mengarah ke halaman scan yang kita kenali
+      if (url.pathname === "/dashboard/scan" && url.searchParams.get("token")) {
+        // Redirect ke halaman /dashboard/scan?token=... yang akan memproses check-in
+        router.push(`/dashboard/scan?token=${url.searchParams.get("token")}`);
+      } else {
+        setScanError("QR Code tidak valid. Pastikan memindai QR Code event OSIS yang benar.");
+      }
+    } catch {
+      // Jika bukan URL valid — mungkin format lama (qrData langsung)
+      // Coba fallback ke API /api/absen dengan qrData
+      handleLegacyQrData(decodedText);
+    }
+  };
+
+  // Fallback untuk QR lama yang berisi kode langsung (bukan URL)
+  const handleLegacyQrData = async (qrData: string) => {
+    try {
       const res = await fetch("/api/absen", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ qrData: decodedText }),
+        body: JSON.stringify({ qrData }),
       });
 
       const data = await res.json();
 
       if (res.ok) {
-        alert("Berhasil melakukan Check-In Absensi!");
-        // Kamu bisa trigger refresh data event di sini jika perlu
+        setScanError(null);
+        alert(`✅ Berhasil melakukan Check-In Absensi!\n${data.message || ""}`);
       } else {
-        alert(`Gagal Check-In: ${data.message || "Terjadi kesalahan"}`);
+        // Gunakan data.error (bukan data.message) sesuai format jsonError()
+        setScanError(data.error || "Gagal melakukan Check-In. Silakan coba lagi.");
       }
-    } catch (error) {
-      console.error(error);
-      alert("Gagal terhubung ke server.");
-    } finally {
-      setLoading(false);
+    } catch (err) {
+      console.error("Check-in error:", err);
+      setScanError("Gagal terhubung ke server. Periksa koneksi internet Anda.");
     }
   };
 
@@ -46,19 +67,30 @@ export default function AnggotaEventPage() {
             Daftar event OSIS dan lakukan check-in QR.
           </p>
         </div>
-        
+
         {/* Tombol untuk Membuka Kamera Scanner */}
         <button
-          onClick={() => setShowScanner(true)}
+          onClick={() => { setShowScanner(true); setScanError(null); }}
           className="mt-4 sm:mt-0 inline-flex items-center justify-center rounded-xl bg-navy px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-navy/90 transition"
         >
           📷 Scan QR Check-In
         </button>
       </div>
 
-      {loading && (
-        <div className="mb-4 p-3 bg-blue-50 text-blue-700 text-sm rounded-xl">
-          Memproses data check-in...
+      {/* Pesan error jika scan gagal */}
+      {scanError && (
+        <div className="mb-4 flex items-start gap-3 p-4 bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl">
+          <span className="text-lg leading-none">⚠️</span>
+          <div>
+            <p className="font-semibold">Check-In Gagal</p>
+            <p className="mt-0.5 text-red-600">{scanError}</p>
+          </div>
+          <button
+            onClick={() => setScanError(null)}
+            className="ml-auto text-red-400 hover:text-red-600 font-bold text-lg leading-none"
+          >
+            ×
+          </button>
         </div>
       )}
 
