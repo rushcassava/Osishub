@@ -6,7 +6,7 @@ import {
   Button,
   Card,
   EmptyState,
-  FormPanel,
+  Modal,
   SelectInput,
   StatBox,
   TextArea,
@@ -29,7 +29,11 @@ export default function ArsipModule() {
   const [items, setItems] = useState<ArsipItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
 
+  // Modal form state
+  const [formOpen, setFormOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [judul, setJudul] = useState("");
   const [kategori, setKategori] = useState("Notulen");
   const [deskripsi, setDeskripsi] = useState("");
@@ -38,9 +42,13 @@ export default function ArsipModule() {
 
   async function load() {
     setLoading(true);
-    const res = await fetch("/api/arsip");
-    const data = await res.json();
-    if (data.arsip) setItems(data.arsip);
+    try {
+      const res = await fetch("/api/arsip");
+      const data = await res.json();
+      if (data.arsip) setItems(data.arsip);
+    } catch {
+      setError("Gagal memuat data arsip.");
+    }
     setLoading(false);
   }
 
@@ -48,65 +56,84 @@ export default function ArsipModule() {
     load();
   }, []);
 
+  function resetForm() {
+    setJudul("");
+    setKategori("Notulen");
+    setDeskripsi("");
+    setFileNama("");
+    setUrl("");
+  }
+
+  function openForm() {
+    resetForm();
+    setFormOpen(true);
+  }
+
+  function closeForm() {
+    setFormOpen(false);
+    resetForm();
+  }
+
   async function simpan(e: React.FormEvent) {
     e.preventDefault();
     if (!judul || !fileNama || !url) return;
-    const res = await fetch("/api/arsip", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ judul, kategori, deskripsi, file_nama: fileNama, url }),
-    });
-    if (res.ok) {
-      setJudul("");
-      setDeskripsi("");
-      setFileNama("");
-      setUrl("");
-      setMessage("Arsip berhasil disimpan.");
-      setTimeout(() => setMessage(""), 3000);
-      load();
+    setSubmitting(true);
+    try {
+      const res = await fetch("/api/arsip", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ judul, kategori, deskripsi, file_nama: fileNama, url }),
+      });
+      if (res.ok) {
+        setMessage("Arsip berhasil disimpan.");
+        setTimeout(() => setMessage(""), 3000);
+        closeForm();
+        load();
+      } else {
+        const data = await res.json();
+        setError(data.error || "Gagal menyimpan arsip.");
+      }
+    } catch {
+      setError("Terjadi kesalahan jaringan.");
     }
+    setSubmitting(false);
   }
 
   async function hapus(id: number) {
     if (!confirm("Yakin ingin menghapus arsip ini?")) return;
     const res = await fetch(`/api/arsip/${id}`, { method: "DELETE" });
-    if (res.ok) load();
+    if (res.ok) {
+      setMessage("Arsip berhasil dihapus.");
+      setTimeout(() => setMessage(""), 3000);
+      load();
+    }
   }
 
   return (
     <div className="flex flex-col gap-6">
+      {/* Notifikasi Global */}
+      {(message || error) && (
+        <div className={`rounded-lg px-4 py-3 text-[13.5px] font-medium ${error ? "bg-red-50 text-red-600" : "bg-green-50 text-green-600"}`}>
+          {error || message}
+        </div>
+      )}
+
+      {/* ── Stat Boxes ── */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <StatBox label="Total Arsip" value={items.length} tone="default" />
         <StatBox label="Notulen" value={items.filter((i) => i.kategori === "Notulen").length} tone="blue" />
         <StatBox label="Dokumentasi" value={items.filter((i) => i.kategori === "Dokumentasi").length} tone="gold" />
       </div>
 
-      <FormPanel title="Simpan Arsip Baru" subtitle="Dokumen, notulen, surat, dan hasil rapat tersimpan rapi.">
-        <form onSubmit={simpan} className="flex flex-col gap-4">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-[1fr_220px]">
-            <TextInput label="Judul Dokumen" placeholder="mis. Notulen Rapat Pengurus #12" value={judul} onChange={(e) => setJudul(e.target.value)} required />
-            <SelectInput label="Kategori" value={kategori} onChange={(e) => setKategori(e.target.value)}>
-              <option>Notulen</option>
-              <option>Dokumentasi</option>
-              <option>Surat</option>
-              <option>Laporan</option>
-              <option>Lainnya</option>
-            </SelectInput>
-          </div>
-          <TextArea label="Deskripsi (opsional)" value={deskripsi} onChange={(e) => setDeskripsi(e.target.value)} />
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <TextInput label="Nama / Format File" placeholder="mis. PDF / Google Drive Document" value={fileNama} onChange={(e) => setFileNama(e.target.value)} required />
-            <TextInput label="URL / Link Dokumen (Google Drive, dll)" placeholder="mis. https://drive.google.com/..." value={url} onChange={(e) => setUrl(e.target.value)} required />
-          </div>
-          <div className="flex items-center gap-3">
-            <Button type="submit">Simpan Arsip</Button>
-            {message && <span className="text-[13px] font-medium text-green-600">{message}</span>}
-          </div>
-        </form>
-      </FormPanel>
-
+      {/* ── Header & Tombol Tambah Arsip ── */}
       <div>
-        <h3 className="mb-3 font-display text-[16px] font-bold text-navy">Daftar Arsip</h3>
+        <div className="mb-3 flex items-center justify-between">
+          <h3 className="font-display text-[16px] font-bold text-navy">Daftar Arsip</h3>
+          <Button onClick={openForm} className="gap-1.5">
+            <span className="text-[16px] leading-none">+</span> Simpan Arsip Baru
+          </Button>
+        </div>
+
         {loading ? (
           <p className="text-[13.5px] text-inkFaint">Memuat data...</p>
         ) : items.length === 0 ? (
@@ -146,7 +173,64 @@ export default function ArsipModule() {
           </div>
         )}
       </div>
+
+      {/* ── Modal Form Simpan Arsip Baru ── */}
+      <Modal
+        open={formOpen}
+        onClose={closeForm}
+        title="Simpan Arsip Baru"
+        size="lg"
+      >
+        <form onSubmit={simpan} className="flex flex-col gap-4">
+          <p className="text-[13px] text-inkSoft">
+            Dokumen, notulen, surat, dan hasil rapat tersimpan rapi.
+          </p>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-[1fr_220px]">
+            <TextInput
+              label="Judul Dokumen"
+              placeholder="mis. Notulen Rapat Pengurus #12"
+              value={judul}
+              onChange={(e) => setJudul(e.target.value)}
+              required
+            />
+            <SelectInput label="Kategori" value={kategori} onChange={(e) => setKategori(e.target.value)}>
+              <option>Notulen</option>
+              <option>Dokumentasi</option>
+              <option>Surat</option>
+              <option>Laporan</option>
+              <option>Lainnya</option>
+            </SelectInput>
+          </div>
+          <TextArea
+            label="Deskripsi (opsional)"
+            placeholder="Keterangan dokumen..."
+            value={deskripsi}
+            onChange={(e) => setDeskripsi(e.target.value)}
+          />
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <TextInput
+              label="Nama / Format File"
+              placeholder="mis. PDF / Google Drive Document"
+              value={fileNama}
+              onChange={(e) => setFileNama(e.target.value)}
+              required
+            />
+            <TextInput
+              label="URL / Link Dokumen (Google Drive, dll)"
+              placeholder="mis. https://drive.google.com/..."
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              required
+            />
+          </div>
+          <div className="flex justify-end gap-2 border-t border-[#E8EAF0] pt-4">
+            <Button type="button" variant="secondary" onClick={closeForm}>Batal</Button>
+            <Button type="submit" disabled={submitting}>
+              {submitting ? "Menyimpan..." : "Simpan Arsip"}
+            </Button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }
-

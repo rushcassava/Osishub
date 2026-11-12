@@ -6,7 +6,7 @@ import {
   Button,
   Card,
   EmptyState,
-  FormPanel,
+  Modal,
   SelectInput,
   StatBox,
   Table,
@@ -34,8 +34,11 @@ export default function KeuanganModule({ mode }: { mode: Mode }) {
   const [perKategori, setPerKategori] = useState<{ kategori: string; pemasukan: number; pengeluaran: number }[]>([]);
   const [ringkasan, setRingkasan] = useState({ pemasukan: 0, pengeluaran: 0, saldo: 0, total_transaksi: 0 });
   const [loading, setLoading] = useState(true);
-  const [message, setMessage] = useState("");
+  const [formOpen, setFormOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [formError, setFormError] = useState("");
 
+  // Form state
   const [judul, setJudul] = useState("");
   const [jumlah, setJumlah] = useState("");
   const [jenis, setJenis] = useState<"PEMASUKAN" | "PENGELUARAN">("PEMASUKAN");
@@ -52,29 +55,41 @@ export default function KeuanganModule({ mode }: { mode: Mode }) {
     setLoading(false);
   }
 
-  useEffect(() => {
-    load();
-  }, []);
+  useEffect(() => { load(); }, []);
+
+  function resetForm() {
+    setJudul("");
+    setJumlah("");
+    setJenis("PEMASUKAN");
+    setKategori("Kas");
+    setKeterangan("");
+    setFormError("");
+  }
+
+  function openForm() { resetForm(); setFormOpen(true); }
+  function closeForm() { setFormOpen(false); resetForm(); }
 
   async function catat(e: React.FormEvent) {
     e.preventDefault();
     if (!judul || !jumlah) return;
     if (kategori === "Lainnya" && !keterangan.trim()) {
-      alert("Keterangan wajib diisi untuk kategori Lainnya.");
+      setFormError("Keterangan wajib diisi untuk kategori Lainnya.");
       return;
     }
+    setSubmitting(true);
+    setFormError("");
     const res = await fetch("/api/keuangan", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ judul, jumlah, jenis, kategori, keterangan }),
     });
+    setSubmitting(false);
     if (res.ok) {
-      setJudul("");
-      setJumlah("");
-      setKeterangan("");
-      setMessage("Transaksi berhasil dicatat.");
-      setTimeout(() => setMessage(""), 3000);
+      closeForm();
       load();
+    } else {
+      const data = await res.json();
+      setFormError(data.error || "Gagal mencatat transaksi.");
     }
   }
 
@@ -86,50 +101,24 @@ export default function KeuanganModule({ mode }: { mode: Mode }) {
 
   return (
     <div className="flex flex-col gap-6">
+      {/* ── Stat Boxes ── */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <StatBox label="Saldo Kas" value={formatRupiah(ringkasan.saldo)} tone={ringkasan.saldo >= 0 ? "green" : "red"} hint="Total pemasukan − pengeluaran" />
         <StatBox label="Pemasukan" value={formatRupiah(ringkasan.pemasukan)} tone="green" hint="Total dana masuk" />
         <StatBox label="Pengeluaran" value={formatRupiah(ringkasan.pengeluaran)} tone="red" hint="Total dana keluar" />
       </div>
 
-      {mode === "pengurus" && (
-        <FormPanel title="Catat Transaksi" subtitle="Pencatatan pemasukan dan pengeluaran organisasi.">
-          <form onSubmit={catat} className="flex flex-col gap-4">
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <TextInput label="Judul / Uraian" placeholder="mis. Iuran kas bulanan" value={judul} onChange={(e) => setJudul(e.target.value)} required />
-              <TextInput label="Jumlah (Rp)" type="number" min="0" placeholder="mis. 500000" value={jumlah} onChange={(e) => setJumlah(e.target.value)} required />
-            </div>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <SelectInput label="Jenis" value={jenis} onChange={(e) => setJenis(e.target.value as any)}>
-                <option value="PEMASUKAN">Pemasukan</option>
-                <option value="PENGELUARAN">Pengeluaran</option>
-              </SelectInput>
-              <SelectInput label="Kategori" value={kategori} onChange={(e) => setKategori(e.target.value)}>
-                <option>Kas</option>
-                <option>Bantuan</option>
-                <option>Operasional</option>
-                <option>Event</option>
-                <option>Sarana</option>
-                <option>Lainnya</option>
-              </SelectInput>
-            </div>
-            <TextArea 
-              label={kategori === "Lainnya" ? "Keterangan (wajib diisi)" : "Keterangan (opsional)"} 
-              value={keterangan} 
-              onChange={(e) => setKeterangan(e.target.value)} 
-              required={kategori === "Lainnya"}
-            />
-            <div className="flex items-center gap-3">
-              <Button type="submit">Catat Transaksi</Button>
-              {message && <span className="text-[13px] font-medium text-green-600">{message}</span>}
-            </div>
-          </form>
-        </FormPanel>
-      )}
-
+      {/* ── Riwayat Transaksi ── */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
-          <h3 className="mb-3 font-display text-[16px] font-bold text-navy">Riwayat Transaksi</h3>
+          <div className="mb-3 flex items-center justify-between">
+            <h3 className="font-display text-[16px] font-bold text-navy">Riwayat Transaksi</h3>
+            {mode === "pengurus" && (
+              <Button onClick={openForm} className="gap-1.5">
+                <span className="text-[16px] leading-none">+</span> Catat Transaksi
+              </Button>
+            )}
+          </div>
           {loading ? (
             <p className="text-[13.5px] text-inkFaint">Memuat data...</p>
           ) : transaksi.length === 0 ? (
@@ -143,7 +132,7 @@ export default function KeuanganModule({ mode }: { mode: Mode }) {
                   <td className="px-4 py-3 whitespace-nowrap text-inkFaint">{formatTanggal(t.tanggal)}</td>
                   <td className="px-4 py-3">
                     <div className="font-medium text-ink">{t.judul}</div>
-                    <div className="text-[12px] text-inkFaint">{t.keterangan}</div>
+                    {t.keterangan && <div className="text-[12px] text-inkFaint">{t.keterangan}</div>}
                   </td>
                   <td className="px-4 py-3">
                     <Badge variant="navy">{t.kategori}</Badge>
@@ -184,7 +173,67 @@ export default function KeuanganModule({ mode }: { mode: Mode }) {
           </div>
         </div>
       </div>
+
+      {/* ── Modal Form Catat Transaksi ── */}
+      <Modal
+        open={formOpen}
+        onClose={closeForm}
+        title="Catat Transaksi Baru"
+        size="lg"
+      >
+        <form onSubmit={catat} className="flex flex-col gap-4">
+          <p className="text-[13px] text-inkSoft">
+            Catat pemasukan atau pengeluaran organisasi. Data langsung masuk ke laporan keuangan.
+          </p>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <TextInput
+              label="Judul / Uraian"
+              placeholder="mis. Iuran kas bulanan"
+              value={judul}
+              onChange={(e) => setJudul(e.target.value)}
+              required
+            />
+            <TextInput
+              label="Jumlah (Rp)"
+              type="number"
+              min="0"
+              placeholder="mis. 500000"
+              value={jumlah}
+              onChange={(e) => setJumlah(e.target.value)}
+              required
+            />
+          </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <SelectInput label="Jenis" value={jenis} onChange={(e) => setJenis(e.target.value as "PEMASUKAN" | "PENGELUARAN")}>
+              <option value="PEMASUKAN">Pemasukan</option>
+              <option value="PENGELUARAN">Pengeluaran</option>
+            </SelectInput>
+            <SelectInput label="Kategori" value={kategori} onChange={(e) => setKategori(e.target.value)}>
+              <option>Kas</option>
+              <option>Bantuan</option>
+              <option>Operasional</option>
+              <option>Event</option>
+              <option>Sarana</option>
+              <option>Lainnya</option>
+            </SelectInput>
+          </div>
+          <TextArea
+            label={kategori === "Lainnya" ? "Keterangan (wajib diisi)" : "Keterangan (opsional)"}
+            value={keterangan}
+            onChange={(e) => setKeterangan(e.target.value)}
+            required={kategori === "Lainnya"}
+          />
+          {formError && (
+            <p className="rounded-lg bg-red-50 px-3 py-2 text-[13px] font-medium text-red-600">{formError}</p>
+          )}
+          <div className="flex justify-end gap-2 border-t border-[#E8EAF0] pt-4">
+            <Button type="button" variant="secondary" onClick={closeForm}>Batal</Button>
+            <Button type="submit" disabled={submitting}>
+              {submitting ? "Menyimpan..." : "Catat Transaksi"}
+            </Button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }
-

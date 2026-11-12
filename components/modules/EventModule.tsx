@@ -6,12 +6,10 @@ import {
   Button,
   Card,
   EmptyState,
-  FormPanel,
-  SelectInput,
+  Modal,
   TextArea,
   TextInput,
   formatTanggal,
-  Modal,
 } from "@/components/dashboard/ui";
 
 type Mode = "anggota" | "pengurus";
@@ -29,8 +27,11 @@ export default function EventModule({ mode }: { mode: Mode }) {
   const [events, setEvents] = useState<EventItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
 
-  // form pengurus
+  // Modal form pengurus
+  const [formOpen, setFormOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [judul, setJudul] = useState("");
   const [deskripsi, setDeskripsi] = useState("");
   const [tanggal, setTanggal] = useState("");
@@ -43,9 +44,13 @@ export default function EventModule({ mode }: { mode: Mode }) {
 
   async function load() {
     setLoading(true);
-    const res = await fetch("/api/event");
-    const data = await res.json();
-    if (data.events) setEvents(data.events);
+    try {
+      const res = await fetch("/api/event");
+      const data = await res.json();
+      if (data.events) setEvents(data.events);
+    } catch {
+      setError("Gagal memuat data event.");
+    }
     setLoading(false);
   }
 
@@ -71,7 +76,7 @@ export default function EventModule({ mode }: { mode: Mode }) {
         } else {
           setQrError(data.error || "Gagal mengambil token.");
         }
-      } catch (err) {
+      } catch {
         setQrError("Gagal terhubung ke server.");
       }
     }
@@ -82,23 +87,46 @@ export default function EventModule({ mode }: { mode: Mode }) {
     return () => clearInterval(interval);
   }, [activeQrEvent]);
 
+  function resetForm() {
+    setJudul("");
+    setDeskripsi("");
+    setTanggal("");
+    setLokasi("");
+  }
+
+  function openForm() {
+    resetForm();
+    setFormOpen(true);
+  }
+
+  function closeForm() {
+    setFormOpen(false);
+    resetForm();
+  }
+
   async function buatEvent(e: React.FormEvent) {
     e.preventDefault();
     if (!judul || !deskripsi || !tanggal || !lokasi) return;
-    const res = await fetch("/api/event", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ judul, deskripsi, tanggal, lokasi }),
-    });
-    if (res.ok) {
-      setJudul("");
-      setDeskripsi("");
-      setTanggal("");
-      setLokasi("");
-      setMessage("Event berhasil dibuat.");
-      setTimeout(() => setMessage(""), 3000);
-      load();
+    setSubmitting(true);
+    try {
+      const res = await fetch("/api/event", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ judul, deskripsi, tanggal, lokasi }),
+      });
+      if (res.ok) {
+        setMessage("Event berhasil dibuat.");
+        setTimeout(() => setMessage(""), 3000);
+        closeForm();
+        load();
+      } else {
+        const data = await res.json();
+        setError(data.error || "Gagal membuat event.");
+      }
+    } catch {
+      setError("Terjadi kesalahan jaringan.");
     }
+    setSubmitting(false);
   }
 
   async function hapusEvent(event_id: number) {
@@ -113,29 +141,25 @@ export default function EventModule({ mode }: { mode: Mode }) {
 
   return (
     <div className="flex flex-col gap-6">
-      {mode === "pengurus" && (
-        <FormPanel title="Buat Event Baru" subtitle="Event yang dibuat akan langsung terlihat oleh seluruh anggota.">
-          <form onSubmit={buatEvent} className="flex flex-col gap-4">
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <TextInput label="Judul Event" placeholder="mis. Latihan Dasar Kepemimpinan" value={judul} onChange={(e) => setJudul(e.target.value)} required />
-              <TextInput label="Lokasi" placeholder="mis. Aula Utama" value={lokasi} onChange={(e) => setLokasi(e.target.value)} required />
-            </div>
-            <div className="grid grid-cols-1 gap-4">
-              <TextInput label="Tanggal & Waktu" type="datetime-local" value={tanggal} onChange={(e) => setTanggal(e.target.value)} required />
-            </div>
-            <TextArea label="Deskripsi" placeholder="Deskripsi singkat kegiatan..." value={deskripsi} onChange={(e) => setDeskripsi(e.target.value)} required />
-            <div className="flex items-center gap-3">
-              <Button type="submit">Buat Event</Button>
-              {message && <span className="text-[13px] font-medium text-green-600">{message}</span>}
-            </div>
-          </form>
-        </FormPanel>
+      {/* Notifikasi Global */}
+      {(message || error) && (
+        <div className={`rounded-lg px-4 py-3 text-[13.5px] font-medium ${error ? "bg-red-50 text-red-600" : "bg-green-50 text-green-600"}`}>
+          {error || message}
+        </div>
       )}
 
+      {/* ── Header & Tombol Tambah Event ── */}
       <div>
-        <h3 className="mb-3 font-display text-[16px] font-bold text-navy">
-          {mode === "anggota" ? "Event OSIS" : "Semua Event"}
-        </h3>
+        <div className="mb-3 flex items-center justify-between">
+          <h3 className="font-display text-[16px] font-bold text-navy">
+            {mode === "anggota" ? "Event OSIS" : "Semua Event"}
+          </h3>
+          {mode === "pengurus" && (
+            <Button onClick={openForm} className="gap-1.5">
+              <span className="text-[16px] leading-none">+</span> Buat Event Baru
+            </Button>
+          )}
+        </div>
 
         {loading ? (
           <p className="text-[13.5px] text-inkFaint">Memuat data...</p>
@@ -169,7 +193,7 @@ export default function EventModule({ mode }: { mode: Mode }) {
                       {sudahHadir && <span className="text-[13px] font-semibold text-green-600">✓ Kamu sudah hadir</span>}
                     </div>
                   ) : (
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 border-t border-[#E8EAF0] pt-3">
                       <Button variant="primary" className="!py-2 text-[12.5px]" onClick={() => setActiveQrEvent({ id: e.id_event, judul: e.judul })}>
                         Tampilkan QR Absen
                       </Button>
@@ -185,6 +209,59 @@ export default function EventModule({ mode }: { mode: Mode }) {
         )}
       </div>
 
+      {/* ── Modal Form Buat Event Baru ── */}
+      <Modal
+        open={formOpen}
+        onClose={closeForm}
+        title="Buat Event Baru"
+        size="lg"
+      >
+        <form onSubmit={buatEvent} className="flex flex-col gap-4">
+          <p className="text-[13px] text-inkSoft">
+            Event yang dibuat akan langsung terlihat oleh seluruh anggota.
+          </p>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <TextInput
+              label="Judul Event"
+              placeholder="mis. Latihan Dasar Kepemimpinan"
+              value={judul}
+              onChange={(e) => setJudul(e.target.value)}
+              required
+            />
+            <TextInput
+              label="Lokasi"
+              placeholder="mis. Aula Utama"
+              value={lokasi}
+              onChange={(e) => setLokasi(e.target.value)}
+              required
+            />
+          </div>
+          <div className="grid grid-cols-1 gap-4">
+            <TextInput
+              label="Tanggal & Waktu"
+              type="datetime-local"
+              value={tanggal}
+              onChange={(e) => setTanggal(e.target.value)}
+              required
+            />
+          </div>
+          <TextArea
+            label="Deskripsi"
+            placeholder="Deskripsi singkat kegiatan..."
+            value={deskripsi}
+            onChange={(e) => setDeskripsi(e.target.value)}
+            required
+          />
+          <div className="flex justify-end gap-2 border-t border-[#E8EAF0] pt-4">
+            <Button type="button" variant="secondary" onClick={closeForm}>Batal</Button>
+            <Button type="submit" disabled={submitting}>
+              {submitting ? "Menyimpan..." : "Buat Event"}
+            </Button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* ── Modal QR Absensi ── */}
       {activeQrEvent && (
         <Modal open={!!activeQrEvent} onClose={() => setActiveQrEvent(null)} title={`QR Absensi: ${activeQrEvent.judul}`}>
           <div className="flex flex-col items-center justify-center py-4 text-center">
@@ -226,4 +303,3 @@ export default function EventModule({ mode }: { mode: Mode }) {
     </div>
   );
 }
-

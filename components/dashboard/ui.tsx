@@ -252,18 +252,28 @@ export function Modal({
   onClose,
   title,
   children,
+  size = "md",
+  scrollable = false,
 }: {
   open: boolean;
   onClose: () => void;
   title: string;
   children: React.ReactNode;
+  /** "md" = max-w-lg (default), "lg" = max-w-2xl, "xl" = max-w-3xl */
+  size?: "md" | "lg" | "xl";
+  /** Jika true, konten modal bisa di-scroll (cocok untuk form panjang) */
+  scrollable?: boolean;
 }) {
   if (!open) return null;
+  const widthCls = size === "xl" ? "max-w-3xl" : size === "lg" ? "max-w-2xl" : "max-w-lg";
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto px-4 py-8">
       <div className="absolute inset-0 bg-navy/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative z-10 w-full max-w-lg rounded-[16px] border border-[#E8EAF0] bg-white p-6 shadow-lg">
-        <div className="mb-4 flex items-center justify-between">
+      <div
+        className={`relative z-10 w-full ${widthCls} rounded-[16px] border border-[#E8EAF0] bg-white shadow-xl`}
+      >
+        {/* Header modal */}
+        <div className="flex items-center justify-between border-b border-[#E8EAF0] px-6 py-4">
           <h3 className="font-display text-[17px] font-bold text-navy">{title}</h3>
           <button
             onClick={onClose}
@@ -272,7 +282,10 @@ export function Modal({
             ✕
           </button>
         </div>
-        {children}
+        {/* Body modal */}
+        <div className={`p-6 ${scrollable ? "max-h-[72vh] overflow-y-auto" : ""}`}>
+          {children}
+        </div>
       </div>
     </div>
   );
