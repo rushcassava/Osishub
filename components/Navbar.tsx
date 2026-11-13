@@ -37,12 +37,6 @@ export default function Navbar() {
           >
             Masuk
           </a>
-          <a
-            href="#kontak"
-            className="rounded-[9px] bg-navy px-5 py-2.5 text-[14.5px] font-semibold text-white transition hover:-translate-y-0.5 hover:bg-blue hover:shadow-[0_10px_24px_-10px_rgba(46,90,172,0.55)]"
-          >
-            Ajukan Demo
-          </a>
         </div>
       </div>
     </header>

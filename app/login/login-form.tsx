@@ -114,15 +114,6 @@ export default function LoginForm() {
             </button>
           </form>
         </div>
-
-        <p className="mt-6 rounded-[10px] border border-line bg-white/60 p-4 text-center text-[12.5px] text-inkFaint">
-          Akun demo (setelah <code className="font-mono">npm run db:seed</code>):
-          <br />
-          <span className="font-mono text-ink">anggota01</span> /{" "}
-          <span className="font-mono text-ink">perwakilan01</span> /{" "}
-          <span className="font-mono text-ink">pengurus01</span> — password:{" "}
-          <span className="font-mono text-ink">password123</span>
-        </p>
       </div>
     </div>
   );

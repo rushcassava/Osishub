@@ -74,7 +74,7 @@ export async function POST(req: NextRequest) {
 
     // 6. Gunakan transaksi untuk atomically mencatat absensi dan poin
     const result = await prisma.$transaction(async (tx) => {
-      // Upsert absensi (buat baru atau update yang sudah ada tapi belum hadir)
+      // Upsert absensi (buat baru atau update yang sudah ada tapi adir)
       const absensi = await tx.absensi.upsert({
         where: {
           pengguna_id_event_id: {
