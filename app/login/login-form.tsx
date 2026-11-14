@@ -71,18 +71,20 @@ export default function LoginForm() {
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div>
               <label htmlFor="username" className="mb-1.5 block text-[13px] font-medium text-ink">
-                Username
-              </label>
-              <input
-                id="username"
-                type="text"
-                autoComplete="username"
-                required
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="w-full rounded-[9px] border border-line bg-bg px-3.5 py-2.5 text-[14.5px] text-ink outline-none transition focus:border-blue focus:bg-white"
-                placeholder="mis. anggota01"
-              />
+    Username
+  </label>
+  <input
+    id="username"
+    type="text"
+    autoComplete="username"
+    required
+    value={username}
+    onChange={(e) => setUsername(e.target.value.replace(/\s/g, ""))}
+    pattern="^[a-zA-Z0-9_]+$"
+    title="Username tidak boleh mengandung spasi. Gunakan underscore (_) untuk memisahkan kata."
+    className="w-full rounded-[9px] border border-line bg-bg px-3.5 py-2.5 text-[14.5px] text-ink outline-none transition focus:border-blue focus:bg-white"
+    placeholder="mis. anggota_01"
+  />
             </div>
 
             <div>
