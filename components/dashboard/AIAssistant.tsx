@@ -1,5 +1,7 @@
 "use client";
-
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
+import "katex/dist/katex.min.css";
 import { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -492,7 +494,8 @@ export default function AIAssistant() {
                 >
                   {message.role === "assistant" ? (
                     <ReactMarkdown
-                      remarkPlugins={[remarkGfm]}
+                     remarkPlugins={[remarkGfm, remarkMath]}
+                    rehypePlugins={[rehypeKatex]}
                       components={{
                         p: ({ children }) => (
                           <p className="mb-2 last:mb-0">
