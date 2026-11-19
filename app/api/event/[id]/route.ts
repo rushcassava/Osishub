@@ -1,9 +1,13 @@
+
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireSession, jsonError } from "@/lib/api";
 
+// Durasi event: 2 jam
+const DURASI_ABSENSI = 2 * 60 * 60 * 1000;
+
 export async function GET(
-  _req: NextRequest, 
+  _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { error } = await requireSession();
@@ -11,18 +15,33 @@ export async function GET(
 
   const resolvedParams = await params;
   const id = parseInt(resolvedParams.id, 10);
-  if (Number.isNaN(id)) return jsonError("ID tidak valid.");
+
+  if (Number.isNaN(id)) {
+    return jsonError("ID tidak valid.");
+  }
 
   try {
     const event = await prisma.event.findUnique({
       where: { id_event: id },
       include: {
         absensi: {
-          include: { pengguna: { select: { nama: true, kelas: true, username: true } } },
+          include: {
+            pengguna: {
+              select: {
+                nama: true,
+                kelas: true,
+                username: true,
+              },
+            },
+          },
         },
       },
     });
-    if (!event) return jsonError("Event tidak ditemukan.", 404);
+
+    if (!event) {
+      return jsonError("Event tidak ditemukan.", 404);
+    }
+
     return NextResponse.json({ event });
   } catch (err) {
     console.error("Error fetching event:", err);
@@ -31,25 +50,61 @@ export async function GET(
 }
 
 export async function DELETE(
-  _req: NextRequest, 
+  _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { session, error } = await requireSession(["PENGURUS", "PEMBINA"]);
+  const { error } = await requireSession(["PENGURUS", "PEMBINA"]);
   if (error) return error;
 
   const resolvedParams = await params;
   const id = parseInt(resolvedParams.id, 10);
-  if (Number.isNaN(id)) return jsonError("ID tidak valid.");
+
+  if (Number.isNaN(id)) {
+    return jsonError("ID tidak valid.");
+  }
 
   try {
-    const existing = await prisma.event.findUnique({ where: { id_event: id } });
-    if (!existing) return jsonError("Event tidak ditemukan.", 404);
+    const existing = await prisma.event.findUnique({
+      where: { id_event: id },
+    });
 
-    // Hapus data terkait secara manual untuk menghindari foreign key constraint error
-    await prisma.poinKeaktifan.deleteMany({ where: { event_id: id } });
-    await prisma.absensi.deleteMany({ where: { event_id: id } });
+    if (!existing) {
+      return jsonError("Event tidak ditemukan.", 404);
+    }
 
-    await prisma.event.delete({ where: { id_event: id } });
+    // Validasi tanggal event
+    const waktuMulai = new Date(existing.tanggal).getTime();
+
+    if (!Number.isFinite(waktuMulai)) {
+      return jsonError("Waktu event tidak valid.", 400);
+    }
+
+    // Menghitung waktu selesai event
+    const waktuSelesai = waktuMulai + DURASI_ABSENSI;
+
+    // Menolak penghapusan jika event sudah selesai
+    if (Date.now() >= waktuSelesai) {
+      return jsonError(
+        "Event sudah selesai dan tidak dapat dihapus.",
+        403
+      );
+    }
+
+    // Hapus data terkait secara manual
+    // untuk menghindari foreign key constraint error
+    await prisma.poinKeaktifan.deleteMany({
+      where: { event_id: id },
+    });
+
+    await prisma.absensi.deleteMany({
+      where: { event_id: id },
+    });
+
+    // Hapus event
+    await prisma.event.delete({
+      where: { id_event: id },
+    });
+
     return NextResponse.json({ success: true });
   } catch (err) {
     console.error("Error deleting event:", err);

@@ -1,18 +1,24 @@
+
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 
 /* ─── Formatters ─────────────────────────────────────────── */
 
-export function formatRupiah(n: number | string | { toString(): string }) {
+export function formatRupiah(
+  n: number | string | { toString(): string }
+) {
   const num = typeof n === "number" ? n : parseFloat(n.toString());
   if (Number.isNaN(num)) return "Rp 0";
-  return "Rp " + num.toLocaleString("id-ID", { minimumFractionDigits: 0 });
+  return "Rp " + num.toLocaleString("id-ID", {
+    minimumFractionDigits: 0,
+  });
 }
 
 export function formatTanggal(iso: string | Date) {
   const d = typeof iso === "string" ? new Date(iso) : iso;
   if (Number.isNaN(d.getTime())) return "-";
+
   return d.toLocaleDateString("id-ID", {
     day: "numeric",
     month: "short",
@@ -23,6 +29,7 @@ export function formatTanggal(iso: string | Date) {
 export function formatWaktu(iso: string | Date) {
   const d = typeof iso === "string" ? new Date(iso) : iso;
   if (Number.isNaN(d.getTime())) return "-";
+
   return d.toLocaleDateString("id-ID", {
     day: "numeric",
     month: "short",
@@ -34,7 +41,14 @@ export function formatWaktu(iso: string | Date) {
 
 /* ─── Badge ──────────────────────────────────────────────── */
 
-export type BadgeVariant = "green" | "blue" | "amber" | "red" | "gray" | "gold" | "navy";
+export type BadgeVariant =
+  | "green"
+  | "blue"
+  | "amber"
+  | "red"
+  | "gray"
+  | "gold"
+  | "navy";
 
 const badgeStyles: Record<BadgeVariant, string> = {
   green: "bg-emerald-50 text-emerald-700 border-emerald-200",
@@ -74,7 +88,9 @@ export function Card({
   className?: string;
 }) {
   return (
-    <div className={`rounded-[14px] border border-[#E8EAF0] bg-white p-5 shadow-sm transition-shadow hover:shadow-md ${className}`}>
+    <div
+      className={`rounded-[14px] border border-[#E8EAF0] bg-white p-5 shadow-sm transition-shadow hover:shadow-md ${className}`}
+    >
       {children}
     </div>
   );
@@ -99,15 +115,22 @@ export function StatBox({
     gold: "text-gold",
     amber: "text-amber-600",
   };
+
   return (
     <Card className="flex flex-col gap-1">
       <div className="font-mono text-[11px] uppercase tracking-[0.08em] text-inkFaint">
         {label}
       </div>
-      <div className={`font-display text-[24px] font-bold leading-tight ${toneMap[tone]}`}>
+
+      <div
+        className={`font-display text-[24px] font-bold leading-tight ${toneMap[tone]}`}
+      >
         {value}
       </div>
-      {hint && <div className="text-[12.5px] text-inkSoft">{hint}</div>}
+
+      {hint && (
+        <div className="text-[12.5px] text-inkSoft">{hint}</div>
+      )}
     </Card>
   );
 }
@@ -120,10 +143,16 @@ const inputCls =
 export function TextInput({
   label,
   ...props
-}: React.InputHTMLAttributes<HTMLInputElement> & { label?: string }) {
+}: React.InputHTMLAttributes<HTMLInputElement> & {
+  label?: string;
+}) {
   return (
     <label className="block">
-      {label && <span className="mb-1.5 block text-[13px] font-medium text-ink">{label}</span>}
+      {label && (
+        <span className="mb-1.5 block text-[13px] font-medium text-ink">
+          {label}
+        </span>
+      )}
       <input className={inputCls} {...props} />
     </label>
   );
@@ -132,10 +161,16 @@ export function TextInput({
 export function TextArea({
   label,
   ...props
-}: React.TextareaHTMLAttributes<HTMLTextAreaElement> & { label?: string }) {
+}: React.TextareaHTMLAttributes<HTMLTextAreaElement> & {
+  label?: string;
+}) {
   return (
     <label className="block">
-      {label && <span className="mb-1.5 block text-[13px] font-medium text-ink">{label}</span>}
+      {label && (
+        <span className="mb-1.5 block text-[13px] font-medium text-ink">
+          {label}
+        </span>
+      )}
       <textarea className={`${inputCls} min-h-[90px] resize-y`} {...props} />
     </label>
   );
@@ -145,10 +180,16 @@ export function SelectInput({
   label,
   children,
   ...props
-}: React.SelectHTMLAttributes<HTMLSelectElement> & { label?: string }) {
+}: React.SelectHTMLAttributes<HTMLSelectElement> & {
+  label?: string;
+}) {
   return (
     <label className="block">
-      {label && <span className="mb-1.5 block text-[13px] font-medium text-ink">{label}</span>}
+      {label && (
+        <span className="mb-1.5 block text-[13px] font-medium text-ink">
+          {label}
+        </span>
+      )}
       <select className={inputCls} {...props}>
         {children}
       </select>
@@ -158,7 +199,12 @@ export function SelectInput({
 
 /* ─── Tombol ─────────────────────────────────────────────── */
 
-type ButtonVariant = "primary" | "secondary" | "ghost" | "danger" | "success";
+type ButtonVariant =
+  | "primary"
+  | "secondary"
+  | "ghost"
+  | "danger"
+  | "success";
 
 export function Button({
   children,
@@ -170,11 +216,13 @@ export function Button({
 }) {
   const variants: Record<ButtonVariant, string> = {
     primary: "bg-navy text-white hover:bg-blueBright shadow-sm",
-    secondary: "border border-[#E8EAF0] bg-white text-ink hover:border-inkSoft hover:text-ink",
+    secondary:
+      "border border-[#E8EAF0] bg-white text-ink hover:border-inkSoft hover:text-ink",
     ghost: "text-inkSoft hover:bg-bgAlt hover:text-ink",
     danger: "bg-red-600 text-white hover:bg-red-700 shadow-sm",
     success: "bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm",
   };
+
   return (
     <button
       className={`inline-flex items-center justify-center gap-2 rounded-[9px] px-4 py-2.5 text-[13.5px] font-semibold transition-all disabled:cursor-not-allowed disabled:opacity-60 ${variants[variant]} ${className}`}
@@ -198,8 +246,14 @@ export function FormPanel({
 }) {
   return (
     <Card>
-      <h3 className="mb-1 font-display text-[16px] font-bold text-navy">{title}</h3>
-      {subtitle && <p className="mb-4 text-[13px] text-inkSoft">{subtitle}</p>}
+      <h3 className="mb-1 font-display text-[16px] font-bold text-navy">
+        {title}
+      </h3>
+
+      {subtitle && (
+        <p className="mb-4 text-[13px] text-inkSoft">{subtitle}</p>
+      )}
+
       <div className="flex flex-col gap-4">{children}</div>
     </Card>
   );
@@ -229,6 +283,7 @@ export function Table({
             ))}
           </tr>
         </thead>
+
         <tbody className="divide-y divide-[#E8EAF0]">{children}</tbody>
       </table>
     </div>
@@ -239,8 +294,12 @@ export function EmptyState({ message }: { message: string }) {
   return (
     <div className="rounded-[12px] border border-dashed border-[#E8EAF0] bg-white/50 px-6 py-12 text-center">
       <div className="mb-2 text-[28px]">🗂️</div>
+
       <p className="text-[14px] font-medium text-ink">{message}</p>
-      <p className="text-[12.5px] text-inkFaint">Data yang kamu tambahkan akan muncul di sini.</p>
+
+      <p className="text-[12.5px] text-inkFaint">
+        Data yang kamu tambahkan akan muncul di sini.
+      </p>
     </div>
   );
 }
@@ -259,31 +318,68 @@ export function Modal({
   onClose: () => void;
   title: string;
   children: React.ReactNode;
-  /** "md" = max-w-lg (default), "lg" = max-w-2xl, "xl" = max-w-3xl */
   size?: "md" | "lg" | "xl";
-  /** Jika true, konten modal bisa di-scroll (cocok untuk form panjang) */
   scrollable?: boolean;
 }) {
+  useEffect(() => {
+    if (!open) return;
+
+    const previousBodyOverflow = document.body.style.overflow;
+    const previousHtmlOverflow = document.documentElement.style.overflow;
+
+    // Mengunci scroll halaman belakang
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+
+    return () => {
+      // Mengembalikan scroll ketika modal ditutup
+      document.body.style.overflow = previousBodyOverflow;
+      document.documentElement.style.overflow = previousHtmlOverflow;
+    };
+  }, [open]);
+
   if (!open) return null;
-  const widthCls = size === "xl" ? "max-w-3xl" : size === "lg" ? "max-w-2xl" : "max-w-lg";
+
+  const widthCls =
+    size === "xl"
+      ? "max-w-3xl"
+      : size === "lg"
+        ? "max-w-2xl"
+        : "max-w-lg";
+
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto px-4 py-8">
-      <div className="absolute inset-0 bg-navy/40 backdrop-blur-sm" onClick={onClose} />
+    <div className="fixed inset-0 z-[100] flex items-center justify-center overflow-hidden overscroll-contain p-4">
+      {/* Background overlay */}
       <div
-        className={`relative z-10 w-full ${widthCls} rounded-[16px] border border-[#E8EAF0] bg-white shadow-xl`}
+        className="absolute inset-0 bg-navy/40 backdrop-blur-sm"
+        onClick={onClose}
+      />
+
+      {/* Modal container */}
+      <div
+        className={`relative z-10 flex max-h-[calc(100dvh-2rem)] w-full ${widthCls} flex-col overflow-hidden rounded-[16px] border border-[#E8EAF0] bg-white shadow-xl`}
       >
         {/* Header modal */}
-        <div className="flex items-center justify-between border-b border-[#E8EAF0] px-6 py-4">
-          <h3 className="font-display text-[17px] font-bold text-navy">{title}</h3>
+        <div className="flex shrink-0 items-center justify-between border-b border-[#E8EAF0] px-6 py-4">
+          <h3 className="font-display text-[17px] font-bold text-navy">
+            {title}
+          </h3>
+
           <button
+            type="button"
             onClick={onClose}
             className="rounded-md px-2 py-1 text-inkFaint transition hover:bg-bgAlt hover:text-ink"
           >
             ✕
           </button>
         </div>
+
         {/* Body modal */}
-        <div className={`p-6 ${scrollable ? "max-h-[72vh] overflow-y-auto" : ""}`}>
+        <div
+          className={`min-h-0 flex-1 overflow-y-auto overscroll-contain p-6 ${
+            scrollable ? "max-h-[72vh]" : ""
+          }`}
+        >
           {children}
         </div>
       </div>

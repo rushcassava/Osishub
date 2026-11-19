@@ -95,7 +95,7 @@ Route (app)                              Size     First Load JS
   └ other shared chunks (total)          1.89 kB
 
 
-ƒ Middleware                             32.5 kB
+ƒ dependenciesware                             32.5 kB
 
 ○  (Static)   prerendered as static content
 ƒ  (Dynamic)  server-rendered on demand

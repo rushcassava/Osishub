@@ -1,10 +1,10 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
 import {
   Badge,
   Button,
-  Card,
   EmptyState,
   Modal,
   SelectInput,
@@ -13,7 +13,11 @@ import {
   formatTanggal,
 } from "@/components/dashboard/ui";
 
-type Peran = "ANGGOTA" | "PERWAKILAN_KELAS" | "PENGURUS" | "PEMBINA";
+type Peran =
+  | "ANGGOTA"
+  | "PERWAKILAN_KELAS"
+  | "PENGURUS"
+  | "PEMBINA";
 
 type PenggunaItem = {
   id_pengguna: number;
@@ -42,12 +46,17 @@ const peranLabel: Record<Peran, string> = {
   PEMBINA: "Pembina",
 };
 
-const peranVariant: Record<Peran, "green" | "blue" | "amber" | "red" | "gray" | "gold" | "navy"> = {
+const peranVariant: Record<
+  Peran,
+  "green" | "blue" | "amber" | "red" | "gray" | "gold" | "navy"
+> = {
   ANGGOTA: "gray",
   PERWAKILAN_KELAS: "blue",
   PENGURUS: "gold",
   PEMBINA: "navy",
 };
+
+const ITEMS_PER_PAGE = 10;
 
 export default function PenggunaModule() {
   const [items, setItems] = useState<PenggunaItem[]>([]);
@@ -55,6 +64,10 @@ export default function PenggunaModule() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [sessionId, setSessionId] = useState<number | null>(null);
+
+  // Pencarian dan pagination
+  const [search, setSearch] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
 
   // Modal state buat akun
   const [formOpen, setFormOpen] = useState(false);
@@ -66,7 +79,7 @@ export default function PenggunaModule() {
   const [kelas, setKelas] = useState("");
   const [jabatan, setJabatan] = useState("");
 
-  // modal reset sandi
+  // Modal reset sandi
   const [resetTarget, setResetTarget] = useState<PenggunaItem | null>(null);
   const [newPassword, setNewPassword] = useState("");
 
@@ -78,6 +91,7 @@ export default function PenggunaModule() {
       setMessage(msg);
       setError("");
     }
+
     setTimeout(() => {
       setError("");
       setMessage("");
@@ -86,20 +100,64 @@ export default function PenggunaModule() {
 
   async function load() {
     setLoading(true);
+
     try {
       const res = await fetch("/api/pengguna");
       const data = await res.json();
-      if (data.pengguna) setItems(data.pengguna);
-      if (data.session?.id) setSessionId(data.session.id);
+
+      if (!res.ok) {
+        throw new Error(data.error || "Gagal memuat data pengguna.");
+      }
+
+      if (data.pengguna) {
+        setItems(data.pengguna);
+      }
+
+      if (data.session?.id) {
+        setSessionId(data.session.id);
+      }
     } catch {
       flash("Gagal memuat data pengguna.", true);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }
 
   useEffect(() => {
     load();
   }, []);
+
+  // Filter berdasarkan nama atau username
+  const filteredItems = items.filter((u) => {
+    const keyword = search.trim().toLowerCase();
+
+    if (!keyword) return true;
+
+    return (
+      u.nama.toLowerCase().includes(keyword) ||
+      u.username.toLowerCase().includes(keyword)
+    );
+  });
+
+  // Perhitungan pagination
+  const totalPages = Math.ceil(
+    filteredItems.length / ITEMS_PER_PAGE
+  );
+
+  const safePage = Math.min(
+    currentPage,
+    Math.max(totalPages, 1)
+  );
+
+  const paginatedItems = filteredItems.slice(
+    (safePage - 1) * ITEMS_PER_PAGE,
+    safePage * ITEMS_PER_PAGE
+  );
+
+  function handleSearch(value: string) {
+    setSearch(value);
+    setCurrentPage(1);
+  }
 
   function resetForm() {
     setUsername("");
@@ -122,65 +180,105 @@ export default function PenggunaModule() {
 
   async function createAkun(e: React.FormEvent) {
     e.preventDefault();
+
     if (!username.trim() || !password || !nama.trim() || !peran) {
       flash("Semua field wajib diisi.", true);
       return;
     }
+
     setSubmitting(true);
-    const res = await fetch("/api/pengguna", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        username: username.trim(),
-        password,
-        nama: nama.trim(),
-        peran,
-        kelas: kelas.trim() || null,
-        jabatan: jabatan.trim() || null,
-      }),
-    });
-    const data = await res.json();
-    setSubmitting(false);
-    if (res.ok) {
-      flash(data.message || "Akun berhasil dibuat.");
-      closeForm();
-      load();
-    } else {
-      flash(data.error || "Gagal membuat akun.", true);
+
+    try {
+      const res = await fetch("/api/pengguna", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: username.trim(),
+          password,
+          nama: nama.trim(),
+          peran,
+          kelas: kelas.trim() || null,
+          jabatan: jabatan.trim() || null,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        flash(data.message || "Akun berhasil dibuat.");
+        closeForm();
+        setSearch("");
+        setCurrentPage(1);
+        await load();
+      } else {
+        flash(data.error || "Gagal membuat akun.", true);
+      }
+    } catch {
+      flash("Terjadi kesalahan saat membuat akun.", true);
+    } finally {
+      setSubmitting(false);
     }
   }
 
   async function resetPassword(e: React.FormEvent) {
     e.preventDefault();
+
     if (!resetTarget) return;
+
     if (newPassword.length < 6) {
       flash("Password minimal 6 karakter.", true);
       return;
     }
-    const res = await fetch(`/api/pengguna/${resetTarget.id_pengguna}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ password: newPassword }),
-    });
-    const data = await res.json();
-    if (res.ok) {
-      flash(data.message || "Password berhasil di-reset.");
-      setResetTarget(null);
-      setNewPassword("");
-    } else {
-      flash(data.error || "Gagal reset password.", true);
+
+    try {
+      const res = await fetch(
+        `/api/pengguna/${resetTarget.id_pengguna}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ password: newPassword }),
+        }
+      );
+
+      const data = await res.json();
+
+      if (res.ok) {
+        flash(data.message || "Password berhasil di-reset.");
+        setResetTarget(null);
+        setNewPassword("");
+      } else {
+        flash(data.error || "Gagal reset password.", true);
+      }
+    } catch {
+      flash("Terjadi kesalahan saat reset password.", true);
     }
   }
 
   async function hapus(u: PenggunaItem) {
-    if (!confirm(`Yakin ingin menghapus akun ${u.nama} (${u.username})?`)) return;
-    const res = await fetch(`/api/pengguna/${u.id_pengguna}`, { method: "DELETE" });
-    const data = await res.json();
-    if (res.ok) {
-      flash(data.message || "Akun berhasil dihapus.");
-      load();
-    } else {
-      flash(data.error || "Gagal menghapus akun.", true);
+    if (
+      !confirm(
+        `Yakin ingin menghapus akun ${u.nama} (${u.username})?`
+      )
+    ) {
+      return;
+    }
+
+    try {
+      const res = await fetch(
+        `/api/pengguna/${u.id_pengguna}`,
+        { method: "DELETE" }
+      );
+
+      const data = await res.json();
+
+      if (res.ok) {
+        flash(data.message || "Akun berhasil dihapus.");
+        await load();
+      } else {
+        flash(data.error || "Gagal menghapus akun.", true);
+      }
+    } catch {
+      flash("Terjadi kesalahan saat menghapus akun.", true);
     }
   }
 
@@ -188,80 +286,189 @@ export default function PenggunaModule() {
     <div className="flex flex-col gap-6">
       {/* Notifikasi Flash Global */}
       {(message || error) && (
-        <div className={`rounded-lg px-4 py-3 text-[13.5px] font-medium ${error ? "bg-red-50 text-red-600" : "bg-green-50 text-green-600"}`}>
+        <div
+          className={`rounded-lg px-4 py-3 text-[13.5px] font-medium ${
+            error
+              ? "bg-red-50 text-red-600"
+              : "bg-green-50 text-green-600"
+          }`}
+        >
           {error || message}
         </div>
       )}
 
-      {/* ── Header & Tombol Tambah Akun ── */}
+      {/* Header dan Tombol Tambah Akun */}
       <div>
-        <div className="mb-3 flex items-center justify-between">
+        <div className="mb-3 flex items-center justify-between gap-3">
           <h3 className="font-display text-[16px] font-bold text-navy">
             Daftar Pengguna ({items.length})
           </h3>
+
           <Button onClick={openForm} className="gap-1.5">
-            <span className="text-[16px] leading-none">+</span> Tambah Akun
+            <span className="text-[16px] leading-none">+</span>
+            Tambah Akun
           </Button>
         </div>
 
+        {/* Kolom Pencarian */}
+        <div className="mb-4">
+          <TextInput
+            label="Cari Pengguna"
+            placeholder="Cari berdasarkan nama atau username..."
+            value={search}
+            onChange={(e) => handleSearch(e.target.value)}
+          />
+        </div>
+
         {loading ? (
-          <p className="text-[13.5px] text-inkFaint">Memuat data...</p>
+          <p className="text-[13.5px] text-inkFaint">
+            Memuat data...
+          </p>
         ) : items.length === 0 ? (
           <EmptyState message="Belum ada pengguna." />
+        ) : filteredItems.length === 0 ? (
+          <EmptyState message="Pengguna tidak ditemukan. Coba kata kunci lain." />
         ) : (
-          <Table head={["Nama", "Username", "Peran", "Kelas / Jabatan", "Dibuat", "Aksi"]}>
-            {items.map((u) => (
-              <tr key={u.id_pengguna}>
-                <td className="px-4 py-3">
-                  <div className="font-medium text-ink">{u.nama}</div>
-                  {u.id_pengguna === sessionId && (
-                    <div className="text-[11px] font-mono uppercase text-blue">Akun saya</div>
-                  )}
-                </td>
-                <td className="px-4 py-3 font-mono text-[12.5px] text-inkSoft">{u.username}</td>
-                <td className="px-4 py-3">
-                  <Badge variant={peranVariant[u.peran]}>{peranLabel[u.peran]}</Badge>
-                </td>
-                <td className="px-4 py-3 text-[13px] text-inkSoft">
-                  {u.kelas || u.jabatan || <span className="text-inkFaint">—</span>}
-                </td>
-                <td className="px-4 py-3 whitespace-nowrap text-inkFaint">{formatTanggal(u.dibuatPada)}</td>
-                <td className="px-4 py-3">
-                  <div className="flex flex-wrap gap-2">
-                    <Button
-                      variant="secondary"
-                      className="!px-3 !py-1.5 text-[12px]"
-                      onClick={() => {
-                        setResetTarget(u);
-                        setNewPassword("");
-                      }}
-                    >
-                      Reset Sandi
-                    </Button>
-                    {u.id_pengguna !== sessionId && (
-                      <Button variant="danger" className="!px-3 !py-1.5 text-[12px]" onClick={() => hapus(u)}>
-                        Hapus
-                      </Button>
+          <>
+            <Table
+              head={[
+                "Nama",
+                "Username",
+                "Peran",
+                "Kelas / Jabatan",
+                "Dibuat",
+                "Aksi",
+              ]}
+            >
+              {paginatedItems.map((u) => (
+                <tr key={u.id_pengguna}>
+                  <td className="px-4 py-3">
+                    <div className="font-medium text-ink">
+                      {u.nama}
+                    </div>
+
+                    {u.id_pengguna === sessionId && (
+                      <div className="text-[11px] font-mono uppercase text-blue">
+                        Akun saya
+                      </div>
                     )}
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </Table>
+                  </td>
+
+                  <td className="px-4 py-3 font-mono text-[12.5px] text-inkSoft">
+                    {u.username}
+                  </td>
+
+                  <td className="px-4 py-3">
+                    <Badge variant={peranVariant[u.peran]}>
+                      {peranLabel[u.peran]}
+                    </Badge>
+                  </td>
+
+                  <td className="px-4 py-3 text-[13px] text-inkSoft">
+                    {u.kelas || u.jabatan || (
+                      <span className="text-inkFaint">—</span>
+                    )}
+                  </td>
+
+                  <td className="px-4 py-3 whitespace-nowrap text-inkFaint">
+                    {formatTanggal(u.dibuatPada)}
+                  </td>
+
+                  <td className="px-4 py-3">
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        variant="secondary"
+                        className="!px-3 !py-1.5 text-[12px]"
+                        onClick={() => {
+                          setResetTarget(u);
+                          setNewPassword("");
+                        }}
+                      >
+                        Reset Sandi
+                      </Button>
+
+                      {u.id_pengguna !== sessionId && (
+                        <Button
+                          variant="danger"
+                          className="!px-3 !py-1.5 text-[12px]"
+                          onClick={() => hapus(u)}
+                        >
+                          Hapus
+                        </Button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </Table>
+
+            {/* Pagination */}
+            <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
+              <p className="text-[12.5px] text-inkFaint">
+                Menampilkan{" "}
+                {(safePage - 1) * ITEMS_PER_PAGE + 1}
+                {" - "}
+                {Math.min(
+                  safePage * ITEMS_PER_PAGE,
+                  filteredItems.length
+                )}
+                {" dari "}
+                {filteredItems.length} pengguna
+                {search.trim() && " (hasil pencarian)"}
+              </p>
+
+              {totalPages > 1 && (
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="secondary"
+                    disabled={safePage === 1}
+                    onClick={() =>
+                      setCurrentPage((prev) =>
+                        Math.max(prev - 1, 1)
+                      )
+                    }
+                  >
+                    Sebelumnya
+                  </Button>
+
+                  <span className="text-[13px] font-medium text-ink">
+                    {safePage} / {totalPages}
+                  </span>
+
+                  <Button
+                    variant="secondary"
+                    disabled={safePage === totalPages}
+                    onClick={() =>
+                      setCurrentPage((prev) =>
+                        Math.min(prev + 1, totalPages)
+                      )
+                    }
+                  >
+                    Selanjutnya
+                  </Button>
+                </div>
+              )}
+            </div>
+          </>
         )}
       </div>
 
-      {/* ── Modal Form Buat Akun Baru ── */}
+      {/* Modal Form Buat Akun Baru */}
       <Modal
         open={formOpen}
         onClose={closeForm}
         title="Buat Akun Baru"
         size="lg"
       >
-        <form onSubmit={createAkun} className="flex flex-col gap-4">
+        <form
+          onSubmit={createAkun}
+          className="flex flex-col gap-4"
+        >
           <p className="text-[13px] text-inkSoft">
-            Tambahkan akun untuk anggota, perwakilan kelas, pengurus, atau pembina — tanpa perlu akses database.
+            Tambahkan akun untuk anggota, perwakilan kelas,
+            pengurus, atau pembina — tanpa perlu akses database.
           </p>
+
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <TextInput
               label="Username"
@@ -270,6 +477,7 @@ export default function PenggunaModule() {
               onChange={(e) => setUsername(e.target.value)}
               required
             />
+
             <TextInput
               label="Password"
               type="password"
@@ -279,6 +487,7 @@ export default function PenggunaModule() {
               required
             />
           </div>
+
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-[1fr_220px]">
             <TextInput
               label="Nama Lengkap"
@@ -287,13 +496,23 @@ export default function PenggunaModule() {
               onChange={(e) => setNama(e.target.value)}
               required
             />
-            <SelectInput label="Peran" value={peran} onChange={(e) => setPeran(e.target.value as Peran)}>
+
+            <SelectInput
+              label="Peran"
+              value={peran}
+              onChange={(e) =>
+                setPeran(e.target.value as Peran)
+              }
+            >
               <option value="ANGGOTA">Anggota OSIS</option>
-              <option value="PERWAKILAN_KELAS">Perwakilan Kelas</option>
+              <option value="PERWAKILAN_KELAS">
+                Perwakilan Kelas
+              </option>
               <option value="PENGURUS">Pengurus</option>
               <option value="PEMBINA">Pembina</option>
             </SelectInput>
           </div>
+
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <TextInput
               label="Kelas (opsional)"
@@ -301,6 +520,7 @@ export default function PenggunaModule() {
               value={kelas}
               onChange={(e) => setKelas(e.target.value)}
             />
+
             <TextInput
               label="Jabatan (opsional)"
               placeholder="mis. Ketua Divisi Acara"
@@ -308,8 +528,16 @@ export default function PenggunaModule() {
               onChange={(e) => setJabatan(e.target.value)}
             />
           </div>
+
           <div className="flex justify-end gap-2 border-t border-[#E8EAF0] pt-4">
-            <Button type="button" variant="secondary" onClick={closeForm}>Batal</Button>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={closeForm}
+            >
+              Batal
+            </Button>
+
             <Button type="submit" disabled={submitting}>
               {submitting ? "Menyimpan..." : "Buat Akun"}
             </Button>
@@ -317,16 +545,24 @@ export default function PenggunaModule() {
         </form>
       </Modal>
 
-      {/* ── Modal Reset Sandi ── */}
+      {/* Modal Reset Sandi */}
       <Modal
         open={!!resetTarget}
         onClose={() => setResetTarget(null)}
         title={`Reset Sandi — ${resetTarget?.nama ?? ""}`}
       >
-        <form onSubmit={resetPassword} className="flex flex-col gap-4">
+        <form
+          onSubmit={resetPassword}
+          className="flex flex-col gap-4"
+        >
           <p className="text-[13px] text-inkSoft">
-            Setel password baru untuk <span className="font-semibold text-ink">{resetTarget?.username}</span>. Password minimal 6 karakter.
+            Setel password baru untuk{" "}
+            <span className="font-semibold text-ink">
+              {resetTarget?.username}
+            </span>
+            . Password minimal 6 karakter.
           </p>
+
           <TextInput
             label="Password Baru"
             type="password"
@@ -335,11 +571,19 @@ export default function PenggunaModule() {
             onChange={(e) => setNewPassword(e.target.value)}
             required
           />
+
           <div className="flex justify-end gap-2 border-t border-[#E8EAF0] pt-4">
-            <Button type="button" variant="secondary" onClick={() => setResetTarget(null)}>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setResetTarget(null)}
+            >
               Batal
             </Button>
-            <Button type="submit">Simpan Password</Button>
+
+            <Button type="submit">
+              Simpan Password
+            </Button>
           </div>
         </form>
       </Modal>

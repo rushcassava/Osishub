@@ -221,24 +221,6 @@ export default function Sidebar({
             ))}
           </div>
 
-          {/* Menu khusus Pengurus: Rekap LPJ Tahunan — selalu tampil */}
-          {basePath.includes("pengurus") && (
-            <>
-              <div className="my-3 h-px bg-gradient-to-r from-line to-transparent" />
-              <div className="mb-2 px-2 font-mono text-[10px] uppercase tracking-[0.1em] text-inkFaint">
-                Laporan
-              </div>
-              <div className="flex flex-col gap-0.5">
-                <NavLink
-                  href={`${basePath}/lpj-rekap`}
-                  active={pathname === `${basePath}/lpj-rekap`}
-                  slug="lpj-rekap"
-                  label="Rekap LPJ Tahunan"
-                />
-              </div>
-            </>
-          )}
-
           <div className="mt-auto pt-6">
             <div className="rounded-[12px] border border-[#E8EAF0] bg-gradient-to-br from-bgAlt/60 to-white px-4 py-4 text-[12px] text-inkFaint">
               <div className="mb-1 flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.1em] text-navy">

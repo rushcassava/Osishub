@@ -1,6 +1,6 @@
 const steps = [
-  { title: "Anggota mengajukan", desc: "Aspirasi atau masukan diajukan langsung dari aplikasi, kapan saja." },
-  { title: "Perwakilan kelas meninjau", desc: "Aspirasi diverifikasi dan diteruskan ke divisi pengurus yang relevan." },
+  { title: "Perwakilan kelas mengajukan", desc: "Aspirasi atau masukan diajukan langsung dari aplikasi, kapan saja." },
+  { title: "Anggota kelas meninjau", desc: "Aspirasi diverifikasi dan diteruskan ke divisi pengurus yang relevan." },
   { title: "Pengurus menindaklanjuti", desc: "Divisi terkait memperbarui status penanganan hingga tuntas." },
   { title: "Progres terpantau bersama", desc: "Seluruh anggota dapat melihat hasil akhir secara terbuka." },
 ];

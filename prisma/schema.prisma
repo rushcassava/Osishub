@@ -145,16 +145,17 @@ model Testimonial {
 
 // Tabel ASPIRASI — aspirasi & masukan dari anggota
 model Aspirasi {
-  id_aspirasi    Int            @id @default(autoincrement())
-  judul          String
-  isi            String         @db.Text
-  kategori       String         @default("Umum")
-  status         StatusAspirasi @default(MENUNGGU)
-  penulis_id     Int
-  kelas          String?
-  balasan        String?        @db.Text
-  dibuatPada     DateTime       @default(now())
-  diperbaruiPada DateTime       @updatedAt
+  id_aspirasi     Int            @id @default(autoincrement())
+  judul           String
+  isi             String         @db.Text
+  kategori        String         @default("Umum")
+  status          StatusAspirasi @default(MENUNGGU)
+  penulis_id      Int
+  kelas           String?
+  balasan         String?        @db.Text
+  alasan_penolakan String?       @db.Text
+  dibuatPada      DateTime       @default(now())
+  diperbaruiPada  DateTime       @updatedAt
 
   penulis Pengguna @relation(fields: [penulis_id], references: [id_pengguna])
 
@@ -183,15 +184,31 @@ model Proker {
   judul         String
   deskripsi     String       @db.Text
   divisi        String
+  divisi_id     Int?
   status        StatusProker @default(RENCANA)
   targetSelesai DateTime?
   pembuat_id    Int
   dibuatPada    DateTime     @default(now())
 
-  pembuat Pengguna @relation("ProkerPembuat", fields: [pembuat_id], references: [id_pengguna])
+  pembuat      Pengguna @relation("ProkerPembuat", fields: [pembuat_id], references: [id_pengguna])
+  divisiMaster Divisi?  @relation(fields: [divisi_id], references: [id_divisi], onDelete: SetNull)
 
   @@map("proker")
 }
+
+
+// Tabel MASTER DIVISI — data divisi organisasi
+model Divisi {
+  id_divisi   Int      @id @default(autoincrement())
+  nama_divisi String   @unique
+  dibuatPada  DateTime @default(now())
+
+  proker Proker[]
+  lpj    Lpj[]
+
+  @@map("divisi")
+}
+
 
 // Tabel TRANSAKSI_KEUANGAN — pemasukan/pengeluaran
 model TransaksiKeuangan {
@@ -262,6 +279,7 @@ model Lpj {
   id_lpj       Int        @id @default(autoincrement())
   judul        String
   isi          String     @db.Text
+  divisi_id    Int?
   status       StatusLpj  @default(DIAJUKAN)
   pembuat_id   Int
   reviewer_id  Int?
@@ -269,8 +287,9 @@ model Lpj {
   diajukanPada DateTime   @default(now())
   direviewPada DateTime?
 
-  pembuat  Pengguna  @relation("LpjPembuat", fields: [pembuat_id], references: [id_pengguna])
-  reviewer Pengguna? @relation("LpjReviewer", fields: [reviewer_id], references: [id_pengguna])
+  pembuat      Pengguna @relation("LpjPembuat", fields: [pembuat_id], references: [id_pengguna])
+  reviewer     Pengguna? @relation("LpjReviewer", fields: [reviewer_id], references: [id_pengguna])
+  divisiMaster Divisi?  @relation(fields: [divisi_id], references: [id_divisi], onDelete: SetNull)
 
   @@map("lpj")
 }
