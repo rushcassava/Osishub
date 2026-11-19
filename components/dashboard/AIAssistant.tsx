@@ -1,10 +1,10 @@
-
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import {
   Bot,
-  MessageCircle,
   X,
   RefreshCw,
   Send,
@@ -40,7 +40,6 @@ export default function AIAssistant() {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
-
   const [position, setPosition] = useState<Position | null>(null);
   const [viewport, setViewport] = useState({
     width: 0,
@@ -144,7 +143,6 @@ export default function AIAssistant() {
     if (!position) return;
 
     event.preventDefault();
-
     bubbleRef.current?.setPointerCapture(event.pointerId);
 
     dragRef.current = {
@@ -411,6 +409,7 @@ export default function AIAssistant() {
 
               <div className="mt-1 flex items-center gap-1.5">
                 <span className="h-2 w-2 rounded-full bg-green-400" />
+
                 <span className="text-[11px] text-blue-100">
                   Online
                 </span>
@@ -485,13 +484,114 @@ export default function AIAssistant() {
                 )}
 
                 <div
-                  className={`max-w-[85%] whitespace-pre-wrap break-words rounded-2xl px-3.5 py-3 text-sm leading-relaxed ${
+                  className={`max-w-[85%] break-words rounded-2xl px-3.5 py-3 text-sm leading-relaxed ${
                     message.role === "user"
-                      ? "rounded-tr-sm bg-[#122A5C] text-white"
+                      ? "whitespace-pre-wrap rounded-tr-sm bg-[#122A5C] text-white"
                       : "rounded-tl-sm border border-slate-100 bg-white text-slate-700 shadow-sm"
                   }`}
                 >
-                  {message.content}
+                  {message.role === "assistant" ? (
+                    <ReactMarkdown
+                      remarkPlugins={[remarkGfm]}
+                      components={{
+                        p: ({ children }) => (
+                          <p className="mb-2 last:mb-0">
+                            {children}
+                          </p>
+                        ),
+
+                        strong: ({ children }) => (
+                          <strong className="font-bold text-slate-900">
+                            {children}
+                          </strong>
+                        ),
+
+                        em: ({ children }) => (
+                          <em className="italic">{children}</em>
+                        ),
+
+                        h1: ({ children }) => (
+                          <h1 className="mb-2 mt-3 text-lg font-bold text-[#122A5C]">
+                            {children}
+                          </h1>
+                        ),
+
+                        h2: ({ children }) => (
+                          <h2 className="mb-2 mt-3 text-base font-bold text-[#122A5C]">
+                            {children}
+                          </h2>
+                        ),
+
+                        h3: ({ children }) => (
+                          <h3 className="mb-1 mt-2 text-sm font-bold text-[#122A5C]">
+                            {children}
+                          </h3>
+                        ),
+
+                        ul: ({ children }) => (
+                          <ul className="mb-2 ml-5 list-disc space-y-1">
+                            {children}
+                          </ul>
+                        ),
+
+                        ol: ({ children }) => (
+                          <ol className="mb-2 ml-5 list-decimal space-y-1">
+                            {children}
+                          </ol>
+                        ),
+
+                        li: ({ children }) => (
+                          <li className="pl-1">{children}</li>
+                        ),
+
+                        blockquote: ({ children }) => (
+                          <blockquote className="my-2 border-l-4 border-blue-300 pl-3 text-slate-600">
+                            {children}
+                          </blockquote>
+                        ),
+
+                        table: ({ children }) => (
+                          <div className="my-3 overflow-x-auto">
+                            <table className="w-full border-collapse text-left text-xs">
+                              {children}
+                            </table>
+                          </div>
+                        ),
+
+                        th: ({ children }) => (
+                          <th className="border border-slate-200 bg-slate-100 px-2 py-2 font-bold">
+                            {children}
+                          </th>
+                        ),
+
+                        td: ({ children }) => (
+                          <td className="border border-slate-200 px-2 py-2">
+                            {children}
+                          </td>
+                        ),
+
+                        pre: ({ children }) => (
+                          <pre className="my-2 overflow-x-auto rounded-lg bg-slate-900 p-3 text-xs text-slate-100">
+                            {children}
+                          </pre>
+                        ),
+
+                        code: ({ children, className }) => (
+                          <code
+                            className={`rounded bg-slate-100 px-1 py-0.5 font-mono text-xs text-blue-800 ${
+                              className || ""
+                            }`}
+                          >
+                            {children}
+                          </code>
+                        ),
+                      }}
+                    >
+                      {message.content}
+                    </ReactMarkdown>
+                  ) : (
+                    message.content
+                  )}
                 </div>
               </div>
             ))}
