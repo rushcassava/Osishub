@@ -3,6 +3,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import LogoutButton from "@/app/dashboard/logout-button";
 
 type ModuleStatus = "AKTIF" | "SEGERA_HADIR" | "MAINTENANCE";
 
@@ -256,7 +257,7 @@ export default function Sidebar({
               ))}
             </div>
 
-            <div className="mt-auto pt-6">
+                       <div className="mt-auto pt-6">
               <div className="rounded-[12px] border border-[#E8EAF0] bg-gradient-to-br from-bgAlt/60 to-white px-4 py-4 text-[12px] text-inkFaint">
                 <div className="mb-1 flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.1em] text-navy">
                   <span className="text-gold">●</span>
@@ -267,6 +268,14 @@ export default function Sidebar({
                 </div>
               </div>
             </div>
+
+            {/* TOMBOL LOGOUT MOBILE */}
+            <div className="mt-4 border-t border-[#E8EAF0] pt-4">
+              <LogoutButton
+                className="!w-full !justify-start !rounded-xl !px-3 !py-3 !text-red-600 hover:!bg-red-50"
+              />
+            </div>
+
           </aside>
         </div>
       )}

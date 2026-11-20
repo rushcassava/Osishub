@@ -80,7 +80,9 @@ export default async function DashboardLayout({
               </div>
             </div>
 
-            <LogoutButton />
+            <div className="hidden lg:block">
+                <LogoutButton />
+              </div>
           </div>
         </div>
       </header>
