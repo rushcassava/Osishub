@@ -212,22 +212,31 @@ export default function Sidebar({
           />
 
           <aside className="absolute inset-y-0 left-0 flex w-[min(300px,85vw)] flex-col overflow-y-auto border-r border-[#E8EAF0] bg-white px-4 py-6 shadow-2xl animate-in slide-in-from-left duration-200">
-            <div className="mb-6 flex items-center justify-between px-1">
-              <div className="font-display text-base font-bold text-navy">
-                OSIS-Hub
-              </div>
+            
+<div className="mb-6 flex items-center justify-between px-2">
+  <div className="font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-inkFaint">
+    Navigasi OSIS-Hub
+  </div>
 
-              <button
-                type="button"
-                onClick={onClose}
-                aria-label="Tutup menu"
-                className="flex h-9 w-9 items-center justify-center rounded-lg text-inkSoft transition hover:bg-bgAlt"
-              >
-                <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                  <path d="m18 6-12 12M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
+  <button
+    type="button"
+    onClick={onClose}
+    aria-label="Tutup menu"
+    className="flex h-9 w-9 items-center justify-center rounded-lg text-inkSoft transition hover:bg-bgAlt"
+  >
+    <svg
+      className="h-5 w-5"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+    >
+      <path d="m18 6-12 12M6 6l12 12" />
+    </svg>
+  </button>
+</div>
+
 
             <div className="mb-2 px-2 font-mono text-[10px] uppercase tracking-[0.1em] text-inkFaint">
               Navigasi
