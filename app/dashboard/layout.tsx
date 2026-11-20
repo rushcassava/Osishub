@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import LogoutButton from "./logout-button";
-import Sidebar from "@/components/dashboard/Sidebar";
+import DashboardShell from "@/components/dashboard/DashboardShell";
 import AIAssistant from "@/components/dashboard/AIAssistant";
 
 const roleLabel: Record<string, string> = {
@@ -86,17 +86,9 @@ export default async function DashboardLayout({
       </header>
 
       {/* DASHBOARD CONTENT */}
-      <div className="mx-auto flex max-w-[1280px] flex-col gap-6 px-5 py-8 lg:min-h-[calc(100vh-69px)] lg:flex-row lg:gap-0 lg:px-0 lg:py-0">
-        {/* SIDEBAR */}
-        <div className="w-full shrink-0 lg:w-[260px]">
-          <Sidebar modules={modules} basePath={basePath} />
-        </div>
-
-        {/* MAIN CONTENT */}
-        <main className="min-w-0 flex-1 px-5 py-6 lg:px-8 lg:py-8">
-          {children}
-        </main>
-      </div>
+      <DashboardShell modules={modules} basePath={basePath}>
+        {children}
+      </DashboardShell>
 
       {/* FLOATING AI ASSISTANT */}
       <AIAssistant />

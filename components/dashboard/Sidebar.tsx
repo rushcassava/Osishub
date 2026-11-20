@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -12,8 +13,6 @@ type SidebarModule = {
   slug: string | null;
 };
 
-/* ─── Ikon SVG ─────────────────────────────────────────── */
-
 function HomeIcon() {
   return (
     <svg className="h-[17px] w-[17px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -23,7 +22,10 @@ function HomeIcon() {
   );
 }
 
-const iconBySlug: Record<string, { icon: React.ReactNode; tile: string; activeTile: string }> = {
+const iconBySlug: Record<
+  string,
+  { icon: React.ReactNode; tile: string; activeTile: string }
+> = {
   aspirasi: {
     icon: <svg className="h-[17px] w-[17px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>,
     tile: "bg-blueSoft text-blue",
@@ -40,7 +42,7 @@ const iconBySlug: Record<string, { icon: React.ReactNode; tile: string; activeTi
     activeTile: "bg-white/20 text-white",
   },
   agenda: {
-    icon: <svg className="h-[17px] w-[17px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" /><rect x="8" y="2" width="8" height="4" rx="1" ry="1" /><path d="M9 12h6M9 16h6" /></svg>,
+    icon: <svg className="h-[17px] w-[17px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" /><rect x="8" y="2" width="8" height="4" rx="1" /><path d="M9 12h6M9 16h6" /></svg>,
     tile: "bg-goldSoft text-gold",
     activeTile: "bg-white/20 text-white",
   },
@@ -89,24 +91,43 @@ function NavLink({
   slug,
   label,
   status,
+  collapsed = false,
+  onClick,
 }: {
   href: string;
   active: boolean;
   slug: string;
   label: string;
   status?: ModuleStatus;
+  collapsed?: boolean;
+  onClick?: () => void;
 }) {
-  const cfg = iconBySlug[slug] ?? {
-    icon: <svg className="h-[17px] w-[17px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /></svg>,
-    tile: "bg-bgAlt text-inkSoft",
-    activeTile: "bg-white/20 text-white",
-  };
+  const cfg =
+    slug === "home"
+      ? {
+          icon: <HomeIcon />,
+          tile: "bg-blueSoft text-blue",
+          activeTile: "bg-white/20 text-white",
+        }
+      : iconBySlug[slug] ?? {
+          icon: (
+            <svg className="h-[17px] w-[17px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10" />
+            </svg>
+          ),
+          tile: "bg-bgAlt text-inkSoft",
+          activeTile: "bg-white/20 text-white",
+        };
 
   return (
     <Link
       href={href}
       title={label}
-      className={`group relative flex items-center gap-3 rounded-[11px] px-2.5 py-2 text-[13px] font-medium transition-all ${
+      onClick={onClick}
+      aria-label={collapsed ? label : undefined}
+      className={`group relative flex items-center ${
+        collapsed ? "justify-center px-2" : "gap-3 px-2.5"
+      } rounded-[11px] py-2 text-[13px] font-medium transition-all ${
         active
           ? "bg-gradient-to-r from-navyAlt to-navy text-white shadow-card"
           : "text-inkSoft hover:bg-white hover:text-ink hover:shadow-sm"
@@ -115,42 +136,35 @@ function NavLink({
       {active && (
         <span className="absolute -left-1 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-blueBright" />
       )}
-      <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-[9px] transition-all ${active ? cfg.activeTile : cfg.tile}`}>
+
+      <span
+        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-[9px] transition-all ${
+          active ? cfg.activeTile : cfg.tile
+        }`}
+      >
         {cfg.icon}
       </span>
-      <span className="flex-1 leading-snug">{label}</span>
-      {status && (
-        <span className="relative flex h-2 w-2">
-          {status === "AKTIF" && (
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
+
+      {!collapsed && (
+        <>
+          <span className="min-w-0 flex-1 leading-snug">{label}</span>
+
+          {status && (
+            <span className="relative flex h-2 w-2 shrink-0">
+              {status === "AKTIF" && (
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
+              )}
+              <span className={`relative inline-flex h-2 w-2 rounded-full ${statusDotClass[status]}`} />
+            </span>
           )}
-          <span className={`relative inline-flex h-2 w-2 rounded-full ${statusDotClass[status]}`} />
+        </>
+      )}
+
+      {active && (
+        <span className="sr-only">
+          {statusLabel[status ?? "AKTIF"]}
         </span>
       )}
-      {active && <span className="sr-only">{statusLabel[status ?? "AKTIF"]}</span>}
-    </Link>
-  );
-}
-
-function Chip({
-  href,
-  active,
-  children,
-}: {
-  href: string;
-  active: boolean;
-  children: React.ReactNode;
-}) {
-  return (
-    <Link
-      href={href}
-      className={`inline-flex items-center gap-1.5 rounded-full border px-3.5 py-2 text-[12.5px] font-medium transition ${
-        active
-          ? "border-navy bg-navy text-white shadow-sm"
-          : "border-line bg-white text-inkSoft hover:text-ink"
-      }`}
-    >
-      {children}
     </Link>
   );
 }
@@ -158,9 +172,17 @@ function Chip({
 export default function Sidebar({
   modules,
   basePath,
+  collapsed,
+  mobileOpen,
+  onToggle,
+  onClose,
 }: {
   modules: SidebarModule[];
   basePath: string;
+  collapsed: boolean;
+  mobileOpen: boolean;
+  onToggle: () => void;
+  onClose: () => void;
 }) {
   const pathname = usePathname();
 
@@ -178,37 +200,121 @@ export default function Sidebar({
 
   return (
     <>
-      {/* Navigasi mobile — chip horizontal */}
-      <nav className="-mx-1 overflow-x-auto pb-1 lg:hidden">
-        <div className="flex gap-2 whitespace-nowrap">
-          <Chip href={basePath} active={homeActive}>
-            <HomeIcon /> Beranda
-          </Chip>
-          {links.map((l) => (
-            <Chip key={l.href} href={l.href} active={l.active}>
-              <span className="text-inkSoft">{l.label}</span>
-            </Chip>
-          ))}
+      {/* MOBILE DRAWER */}
+      {mobileOpen && (
+        <div className="fixed inset-0 z-[70] lg:hidden">
+          <button
+            type="button"
+            aria-label="Tutup navigasi"
+            onClick={onClose}
+            className="absolute inset-0 h-full w-full bg-slate-950/50 backdrop-blur-[2px]"
+          />
+
+          <aside className="absolute inset-y-0 left-0 flex w-[min(300px,85vw)] flex-col overflow-y-auto border-r border-[#E8EAF0] bg-white px-4 py-6 shadow-2xl animate-in slide-in-from-left duration-200">
+            <div className="mb-6 flex items-center justify-between px-1">
+              <div className="font-display text-base font-bold text-navy">
+                OSIS-Hub
+              </div>
+
+              <button
+                type="button"
+                onClick={onClose}
+                aria-label="Tutup menu"
+                className="flex h-9 w-9 items-center justify-center rounded-lg text-inkSoft transition hover:bg-bgAlt"
+              >
+                <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                  <path d="m18 6-12 12M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="mb-2 px-2 font-mono text-[10px] uppercase tracking-[0.1em] text-inkFaint">
+              Navigasi
+            </div>
+
+            <div className="flex flex-col gap-0.5">
+              <NavLink href={basePath} active={homeActive} slug="home" label="Beranda" onClick={onClose} />
+            </div>
+
+            <div className="my-3 h-px bg-gradient-to-r from-line to-transparent" />
+
+            <div className="mb-2 px-2 font-mono text-[10px] uppercase tracking-[0.1em] text-inkFaint">
+              Modul {links.length > 0 && `(${links.length})`}
+            </div>
+
+            <div className="flex flex-col gap-0.5">
+              {links.map((l) => (
+                <NavLink
+                  key={l.href}
+                  href={l.href}
+                  active={l.active}
+                  slug={l.slug}
+                  label={l.label}
+                  status={l.status}
+                  onClick={onClose}
+                />
+              ))}
+            </div>
+
+            <div className="mt-auto pt-6">
+              <div className="rounded-[12px] border border-[#E8EAF0] bg-gradient-to-br from-bgAlt/60 to-white px-4 py-4 text-[12px] text-inkFaint">
+                <div className="mb-1 flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.1em] text-navy">
+                  <span className="text-gold">●</span>
+                  Pusat kendali
+                </div>
+                <div className="leading-snug">
+                  Organisasi siswa modern dalam satu platform.
+                </div>
+              </div>
+            </div>
+          </aside>
         </div>
-      </nav>
+      )}
 
-      {/* Sidebar desktop */}
-      <aside className="hidden lg:block lg:h-screen lg:sticky lg:top-0">
-        <div className="flex h-full flex-col overflow-y-auto border-r border-[#E8EAF0] bg-white/80 px-4 py-6 backdrop-blur-md">
+      {/* DESKTOP SIDEBAR */}
+      <aside className="hidden h-full w-full lg:sticky lg:top-0 lg:block lg:h-screen">
+        <div
+          className={`flex h-full flex-col overflow-y-auto border-r border-[#E8EAF0] bg-white/80 py-6 backdrop-blur-md ${
+            collapsed ? "items-center px-2" : "px-4"
+          }`}
+        >
+          <div className={`mb-5 flex w-full items-center ${collapsed ? "justify-center" : "justify-between px-2"}`}>
+            {!collapsed && (
+              <span className="font-mono text-[10px] uppercase tracking-[0.1em] text-inkFaint">
+                Navigasi
+              </span>
+            )}
 
-          <div className="mb-2 px-2 font-mono text-[10px] uppercase tracking-[0.1em] text-inkFaint">
-            Navigasi
+            <button
+              type="button"
+              onClick={onToggle}
+              title={collapsed ? "Perbesar sidebar" : "Perkecil sidebar"}
+              aria-label={collapsed ? "Perbesar sidebar" : "Perkecil sidebar"}
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-inkSoft transition hover:bg-bgAlt hover:text-navy"
+            >
+              <svg className="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                {collapsed ? (
+                  <path d="M9 18l6-6-6-6M4 4v16" />
+                ) : (
+                  <path d="M15 18l-6-6 6-6M20 4v16" />
+                )}
+              </svg>
+            </button>
           </div>
-          <div className="flex flex-col gap-0.5">
-            <NavLink href={basePath} active={homeActive} slug="home" label="Beranda" />
+
+          <div className="flex w-full flex-col gap-0.5">
+            <NavLink href={basePath} active={homeActive} slug="home" label="Beranda" collapsed={collapsed} />
           </div>
 
-          <div className="my-3 h-px bg-gradient-to-r from-line to-transparent" />
+          <div className="my-3 h-px w-full bg-gradient-to-r from-line to-transparent" />
 
-          <div className="mb-2 px-2 font-mono text-[10px] uppercase tracking-[0.1em] text-inkFaint">
-            Modul {links.length > 0 && `(${links.length})`}
-          </div>
-          <div className="flex flex-col gap-0.5">
+          {!collapsed && (
+            <div className="mb-2 px-2 font-mono text-[10px] uppercase tracking-[0.1em] text-inkFaint">
+              Modul {links.length > 0 && `(${links.length})`}
+            </div>
+          )}
+
+          <div className="flex w-full flex-col gap-0.5">
             {links.map((l) => (
               <NavLink
                 key={l.href}
@@ -217,19 +323,27 @@ export default function Sidebar({
                 slug={l.slug}
                 label={l.label}
                 status={l.status}
+                collapsed={collapsed}
               />
             ))}
           </div>
 
-          <div className="mt-auto pt-6">
-            <div className="rounded-[12px] border border-[#E8EAF0] bg-gradient-to-br from-bgAlt/60 to-white px-4 py-4 text-[12px] text-inkFaint">
-              <div className="mb-1 flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.1em] text-navy">
-                <svg className="h-3.5 w-3.5 text-gold" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
-                Pusat kendali
+          {!collapsed && (
+            <div className="mt-auto w-full pt-6">
+              <div className="rounded-[12px] border border-[#E8EAF0] bg-gradient-to-br from-bgAlt/60 to-white px-4 py-4 text-[12px] text-inkFaint">
+                <div className="mb-1 flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.1em] text-navy">
+                  <svg className="h-3.5 w-3.5 text-gold" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                  </svg>
+                  Pusat kendali
+                </div>
+                <div className="leading-snug">
+                  Organisasi siswa modern dalam satu platform.
+                </div>
               </div>
-              <div className="leading-snug">Organisasi siswa modern dalam satu platform.</div>
             </div>
-          </div>
+          )}
         </div>
       </aside>
     </>
